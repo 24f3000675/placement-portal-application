@@ -20,6 +20,9 @@ class Admin(db.Model, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
     
+    def get_id(self):
+        return f"admin_{self.id}"
+    
     def __repr__(self):
         return f'<Admin {self.username}>' #Dev purposes only
 
@@ -66,7 +69,7 @@ class Student(db.Model, UserMixin):
     applications = db.relationship('Application', backref='student')
     
     def get_id(self):
-        return self.roll_no
+        return f"student_{self.roll_no}"
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -97,7 +100,6 @@ class Company(db.Model, UserMixin):
     
     company_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     
-    username = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     
@@ -115,7 +117,7 @@ class Company(db.Model, UserMixin):
     placement_drives = db.relationship('PlacementDrive', backref='company')
     
     def get_id(self):
-        return str(self.company_id)
+        return f"company_{self.company_id}"
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

@@ -61,9 +61,8 @@ class Student(db.Model, UserMixin):
     cgpa = db.Column(db.Numeric(4, 2), nullable=False)
     has_backlogs = db.Column(db.Boolean, nullable=False, default=False) 
     
-    is_active = db.Column(db.Boolean, nullable=False, default=True)
-    is_blacklisted = db.Column(db.Boolean, default=False)
     approval_status = db.Column(db.String(50), nullable=False, default='pending') #'Pending', 'Approved', 'Rejected'
+    is_blacklisted = db.Column(db.Boolean, default=False)
     
     skills = db.relationship('Skills', backref='student', uselist=False)
     applications = db.relationship('Application', backref='student')
@@ -112,7 +111,7 @@ class Company(db.Model, UserMixin):
     
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     is_blacklisted = db.Column(db.Boolean, default=False)
-    approval_status = db.Column(db.String(50), nullable=False, default='pending') #'pending' 'approved' 'rejected'
+    approval_status = db.Column(db.String(50), nullable=False, default='pending') #'pending' 'approved' 'rejected' 'blacklisted'
     
     placement_drives = db.relationship('PlacementDrive', backref='company')
     
@@ -146,7 +145,7 @@ class PlacementDrive(db.Model):
     location = db.Column(db.String(255))
     deadline = db.Column(db.DateTime, nullable=False)
     
-    status = db.Column(db.String(50), nullable=False, default='Pending') #Pending/Approved/Closed
+    status = db.Column(db.String(50), nullable=False, default='Pending') #Pending/Approved/Rejected
     remarks = db.Column(db.String(255))
     
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now)

@@ -88,7 +88,7 @@ class Skills(db.Model):
     linkedin_url = db.Column(db.String(255))
     github_url = db.Column(db.String(255))
     resume_link = db.Column(db.String(255), nullable=False)
-    skills = db.Column(db.Text, nullable=False)
+    skills = db.Column(db.Text, nullable=True)
     
     def __repr__(self):
         return f'<Skills for {self.student_roll}>'
@@ -178,7 +178,7 @@ class Application(db.Model):
     
     application_status = db.Column(db.String(20), default='applied')
     applied_on = db.Column(db.DateTime, default=datetime.now)
-    updated_at = db.Column(db.DateTime)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     remarks = db.Column(db.String(255))
     
     __table_args__ = (

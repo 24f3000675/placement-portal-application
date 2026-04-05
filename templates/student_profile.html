@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-md-8">
+        
+        <div class="mt-4 mb-3">
+            <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary">&larr; Back to Dashboard</a>
+        </div>
+
+        <div class="card shadow-sm border-dark mb-5">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Edit Profile</h4>
+            </div>
+            
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('student_profile') }}"> 
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Primary Skills</label>
+                        <textarea name="skills" class="form-control" rows="3" placeholder="Enter your skills seperated by comma">{{ profile.skills if profile else '' }}</textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Resume URL : </label>
+                        <input type="url" name="resume_link" class="form-control" placeholder="https://drive.google.com/..." value="{{ profile.resume_link if profile else '' }}">
+                        <div class="form-text text-muted">Paste a link to your Google Drive resume (Make sure the link sharing is set to "Anyone with the link").</div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">GitHub Profile URL : </label>
+                            <input type="url" name="github_link" class="form-control" placeholder="Github" value="{{ profile.github_url if profile else '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">LinkedIn Profile URL : </label>
+                            <input type="url" name="linkedin_link" class="form-control" placeholder="https://linkedin.com/" value="{{ profile.linkedin_url if profile else '' }}">
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-5">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill">Save Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

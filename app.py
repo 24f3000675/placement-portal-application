@@ -351,6 +351,116 @@ def admin_drive_action(drive_id, action):
     db.session.commit()
     return redirect(url_for('admin_dashboard'))
 
+
+#Student Dashboard
+@app.route('/student/dashboard')
+@login_required
+def student_dashboard():
+    if not current_user.is_authenticated or not current_user.get_id().startswith('student_'):
+        return "Unauthorized Access : Not a Student ", 403
+    
+    if current_user.approval_status == 'pending':
+        logout_user()
+        flash('Your account has not yet been approved by the admin.', 'warning')
+        return redirect(url_for('login'))
+    
+    if current_user.approval_status == 'rejected':
+        logout_user()
+        flash('Your account has been rejected by the admin.', 'warning')
+        return redirect(url_for('login'))
+    
+    if current_user.is_blacklisted:
+        logout_user()
+        flash('Your account has been rejected by the admin.', 'warning')
+        return redirect(url_for('login'))
+    
+    companies = Company.query.filter_by(approval_status='approved').all()
+
+    applications = Application.query.filter_by(student_roll=current_user.roll_no).all()
+
+    return render_template('student_dashboard.html', companies=companies, applications=applications)
+
+@app.route('/student/profile/edit', methods=['GET', 'POST']) #Create and edit a student's profile 
+@login_required
+def student_profile():
+    if not current_user.is_authenticated or not current_user.get_id().startswith('student_'):
+        return "Unauthorized Access : Not a Student ", 403
+    
+    student = Student.query.filter_by(roll_no=current_user.roll_no).first()
+
+    if not student:
+        flash('Student not found', 'danger')
+        return redirect(url_for('login'))
+
+    profile = student.skills
+    
+    if request.method == 'POST':
+        if not profile:
+            profile = Skills(student_roll=student.roll_no, resume_link='')
+            db.session.add(profile)
+
+        profile.resume_link = request.form.get('resume_link', '').strip()
+        profile.github_url = request.form.get('github_link', '').strip()
+        profile.linkedin_url = request.form.get('linkedin_link', '').strip()
+        profile.skills = request.form.get('skills', '').strip()
+        db.session.commit()
+        flash('Profile updated successfully', 'success')
+        return redirect(url_for('student_dashboard'))
+    
+    return render_template('student_profile.html', student=student, profile=profile)
+
+@app.route('/student/company/<int:company_id>') #View a specific company
+@login_required
+def student_company(company_id):
+    if not current_user.is_authenticated or not current_user.get_id().startswith('student_'):
+        return "Unauthorized Access : Not a Student ", 403
+    
+    if not company_id:
+        flash('Company not found', 'danger')
+        return redirect(url_for('student_dashboard'))
+    
+    company = Company.query.filter_by(company_id=company_id).all()
+
+    if not company:
+        flash('Requested Company does not exist', 'warning')
+        return redirect(url_for('student_dashboard'))
+    
+    drive = PlacementDrive.query.filter_by(comp_id=company_id).first()
+
+    return render_template('student_company.html', company=company, drive=drive)
+
+
+@app.route('/student/drive/<int:drive_id>', methods=['GET', 'POST']) #View drive details
+@login_required
+def student_drive_details(drive_id):
+    if not current_user.is_authenticated or not current_user.get_id().startswith('student_'):
+        return "Unauthorized Access : Not an Admin ", 403
+    
+    if not drive_id:
+        flash('Drive not found', 'danger')
+        return redirect(url_for('student_dashboard'))
+    
+    drive = PlacementDrive.query.filter_by(id=drive_id).first()
+
+    if not drive:
+        flash('Drive not found', 'warning')
+        return redirect(url_for('student_dashboard'))
+
+    existing_application = Application.query.filter_by(student_roll=current_user.roll_no, drive_id=drive_id).first()
+
+    if request.method == 'POST':
+        if existing_application:
+            flash('You have already applied for this drive', 'warning')
+        else:
+            new_application = Application(student_roll=current_user.roll_no, drive_id=drive_id, application_status='applied')
+            db.session.add(new_application)
+            db.session.commit()
+            flash(f'Application submitted successfully for {drive.name}!', 'success')
+        return redirect(url_for('student_dashboard'))
+    
+    return render_template('student_drive_details.html', drive=drive, existing_application=existing_application)
+
+
 @app.route('/admin/applications') #Fetch and manage student job applications
 @login_required
 def admin_applications():
@@ -360,29 +470,12 @@ def admin_applications():
     applications = Application.query.all()
     return render_template('admin_applications.html', applications=applications)
 
-@app.route('/admin/student/<string:roll_no>') #View student profile
-@login_required
-def admin_student_profile(roll_no):
-    if not current_user.is_authenticated or not current_user.get_id().startswith('admin_'):
-        return "Unauthorized Access : Not an Admin ", 403
-    
-    student = Student.query.get_or_404(roll_no)
-    return render_template('admin_student_profile.html', student=student)
-
-@app.route('/student/dashboard')
-@login_required
-def student_dashboard():
-    if not current_user.is_authenticated or current_user.get_id().startswith('student_'):
-        return "Unauthorized Access : Not a Student ", 403
-    
-    return render_template('student_dashboard.html')
-
 
 
 @app.route('/company/dashboard')
 @login_required
 def company_dashboard():
-    if not current_user.is_authenticated or current_user.get_id().startswith('company_'):
+    if not current_user.is_authenticated or not current_user.get_id().startswith('company_'):
         return "Unauthorized Access : Not a Company ", 403
 
     return render_template('company_dashboard.html')

@@ -1,0 +1,556 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-4 pb-2 border-bottom">
+            <h2>Welcome Admin!</h2>
+        </div>
+
+        <form class="row g-2 mb-4" method="GET" action="{{ url_for('admin_dashboard') }}">
+            <div class="col-md-4">
+                <input class="form-control" type="search" name="company_search" placeholder="Search Companies" value="{{ company_search }}">
+            </div>
+            <div class="col-md-4">
+                <input class="form-control" type="search" name="student_search" placeholder="Search Students" value="{{ student_search }}">
+            </div>
+            <div class="col-md-4">
+                <input class="form-control" type="search" name="drive_search" placeholder="Search Drives" value="{{ drive_search }}">
+            </div>
+            <div class="col-12 d-flex gap-2">
+                <button class="btn btn-outline-primary" type="submit">Search</button>
+                <a class="btn btn-outline-secondary" href="{{ url_for('admin_dashboard') }}">Clear</a>
+            </div>
+        </form>
+
+        {% set has_search = company_search or student_search or drive_search %}
+        {% if has_search %}
+        <h5 class="mb-3">Search Results</h5>
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    {% if company_search %}
+                    <div class="col-md-4">
+                        <h6 class="mb-2">Companies</h6>
+                        <ul class="list-group">
+                            {% for company in companies %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <button
+                                    type="button"
+                                    class="btn btn-link p-0 text-start detail-trigger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#entityDetailsModal"
+                                    data-entity="company"
+                                    data-company-id="{{ company.company_id }}"
+                                    data-company-name="{{ company.company_name }}"
+                                    data-email="{{ company.email }}"
+                                    data-website="{{ company.website }}"
+                                    data-hr-name="{{ company.hr_name }}"
+                                    data-hr-email="{{ company.hr_email }}"
+                                    data-hr-phone="{{ company.hr_phone }}"
+                                    data-status="{{ company.approval_status }}"
+                                    data-blacklisted="{{ 'Yes' if company.is_blacklisted else 'No' }}"
+                                    data-description="{{ company.company_desc }}"
+                                >
+                                    {{ company.company_name }}
+                                </button>
+                                <span class="badge text-bg-secondary">{{ company.approval_status }}</span>
+                            </li>
+                            {% else %}
+                            <li class="list-group-item text-muted">No company matches found.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    {% if student_search %}
+                    <div class="col-md-4">
+                        <h6 class="mb-2">Students</h6>
+                        <ul class="list-group">
+                            {% for student in students %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <button
+                                    type="button"
+                                    class="btn btn-link p-0 text-start detail-trigger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#entityDetailsModal"
+                                    data-entity="student"
+                                    data-name="{{ student.name }}"
+                                    data-roll-no="{{ student.roll_no }}"
+                                    data-email="{{ student.email }}"
+                                    data-phone="{{ student.phone_no }}"
+                                    data-gender="{{ student.gender }}"
+                                    data-dob="{{ student.dob }}"
+                                    data-location="{{ student.location }}"
+                                    data-dept="{{ student.dept_id }}"
+                                    data-grad-year="{{ student.graduation_year }}"
+                                    data-cgpa="{{ student.cgpa }}"
+                                    data-backlogs="{{ 'Yes' if student.has_backlogs else 'No' }}"
+                                    data-status="{{ student.approval_status }}"
+                                    data-blacklisted="{{ 'Yes' if student.is_blacklisted else 'No' }}"
+                                >
+                                    {{ student.name }} ({{ student.roll_no }})
+                                </button>
+                                <span class="badge text-bg-secondary">{{ student.approval_status }}</span>
+                            </li>
+                            {% else %}
+                            <li class="list-group-item text-muted">No student matches found.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    {% if drive_search %}
+                    <div class="col-md-4">
+                        <h6 class="mb-2">Drives</h6>
+                        <ul class="list-group">
+                            {% for drive in drives %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <button
+                                    type="button"
+                                    class="btn btn-link p-0 text-start detail-trigger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#entityDetailsModal"
+                                    data-entity="drive"
+                                    data-drive-id="{{ drive.id }}"
+                                    data-drive-name="{{ drive.name }}"
+                                    data-job-title="{{ drive.job_title }}"
+                                    data-company-id="{{ drive.comp_id }}"
+                                    data-job-desc="{{ drive.job_desc }}"
+                                    data-min-cgpa="{{ drive.min_cgpa }}"
+                                    data-grad-year="{{ drive.eligible_grad_yr }}"
+                                    data-salary="{{ drive.salary }}"
+                                    data-location="{{ drive.location }}"
+                                    data-deadline="{{ drive.deadline }}"
+                                    data-status="{{ drive.status }}"
+                                    data-remarks="{{ drive.remarks }}"
+                                >
+                                    {{ drive.name }}
+                                </button>
+                                <span class="badge text-bg-secondary">{{ drive.status }}</span>
+                            </li>
+                            {% else %}
+                            <li class="list-group-item text-muted">No drive matches found.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <small class="text-muted">Total Companies</small>
+                        <h4 class="mb-0">{{ stats.total_companies }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <small class="text-muted">Total Students</small>
+                        <h4 class="mb-0">{{ stats.total_students }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <small class="text-muted">Total Drives</small>
+                        <h4 class="mb-0">{{ stats.total_drives }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <small class="text-muted">Total Applications</small>
+                        <h4 class="mb-0">{{ stats.total_applications }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <small class="text-muted">Pending Students</small>
+                        <h4 class="mb-0">{{ stats.pending_students }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <small class="text-muted">Pending Companies</small>
+                        <h4 class="mb-0">{{ stats.pending_companies }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h5 class="mb-3">Registered Companies</h5>
+        <div class="card mb-4">
+            <ul class="list-group list-group-flush">
+                {% for company in companies if company.approval_status == 'approved' %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <button
+                        type="button"
+                        class="btn btn-link p-0 text-start detail-trigger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#entityDetailsModal"
+                        data-entity="company"
+                        data-company-id="{{ company.company_id }}"
+                        data-company-name="{{ company.company_name }}"
+                        data-email="{{ company.email }}"
+                        data-website="{{ company.website }}"
+                        data-hr-name="{{ company.hr_name }}"
+                        data-hr-email="{{ company.hr_email }}"
+                        data-hr-phone="{{ company.hr_phone }}"
+                        data-status="{{ company.approval_status }}"
+                        data-blacklisted="{{ 'Yes' if company.is_blacklisted else 'No' }}"
+                        data-description="{{ company.company_desc }}"
+                    >
+                        {{ company.company_name }}
+                    </button>
+                    <a href="{{ url_for('admin_company_action', company_id=company.company_id, action='blacklist') }}" class="btn btn-sm btn-outline-danger">Blacklist</a>
+                </li>
+                {% else %}
+                <li class="list-group-item text-muted">No registered companies found.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <h5 class="mb-3">Registered Students</h5>
+        <div class="card mb-4">
+            <ul class="list-group list-group-flush">
+                {% for student in students if student.approval_status == 'approved' %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <button
+                        type="button"
+                        class="btn btn-link p-0 text-start detail-trigger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#entityDetailsModal"
+                        data-entity="student"
+                        data-name="{{ student.name }}"
+                        data-roll-no="{{ student.roll_no }}"
+                        data-email="{{ student.email }}"
+                        data-phone="{{ student.phone_no }}"
+                        data-gender="{{ student.gender }}"
+                        data-dob="{{ student.dob }}"
+                        data-location="{{ student.location }}"
+                        data-dept="{{ student.dept_id }}"
+                        data-grad-year="{{ student.graduation_year }}"
+                        data-cgpa="{{ student.cgpa }}"
+                        data-backlogs="{{ 'Yes' if student.has_backlogs else 'No' }}"
+                        data-status="{{ student.approval_status }}"
+                        data-blacklisted="{{ 'Yes' if student.is_blacklisted else 'No' }}"
+                    >
+                        {{ student.name }} ({{ student.roll_no }})
+                    </button>
+                    <a href="{{ url_for('admin_student_action', roll_no=student.roll_no, action='blacklist') }}" class="btn btn-sm btn-outline-danger">Blacklist</a>
+                </li>
+                {% else %}
+                <li class="list-group-item text-muted">No registered students found.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <h5 class="mb-3">Comapny Registrations (Pending Applications)</h5>
+        <div class="card mb-4">
+            <ul class="list-group list-group-flush">
+                {% for company in pending_companies %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <button
+                        type="button"
+                        class="btn btn-link p-0 text-start detail-trigger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#entityDetailsModal"
+                        data-entity="company"
+                        data-company-id="{{ company.company_id }}"
+                        data-company-name="{{ company.company_name }}"
+                        data-email="{{ company.email }}"
+                        data-website="{{ company.website }}"
+                        data-hr-name="{{ company.hr_name }}"
+                        data-hr-email="{{ company.hr_email }}"
+                        data-hr-phone="{{ company.hr_phone }}"
+                        data-status="{{ company.approval_status }}"
+                        data-blacklisted="{{ 'Yes' if company.is_blacklisted else 'No' }}"
+                        data-description="{{ company.company_desc }}"
+                    >
+                        {{ company.company_name }} ({{ company.email }})
+                    </button>
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('admin_company_action', company_id=company.company_id, action='approve') }}" class="btn btn-sm btn-outline-success">Approve</a>
+                        <a href="{{ url_for('admin_company_action', company_id=company.company_id, action='reject') }}" class="btn btn-sm btn-outline-danger">Reject</a>
+                    </div>
+                </li>
+                {% else %}
+                <li class="list-group-item text-muted">No pending applications.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <h5 class="mb-3 mt-4">Student Registrations (Pending Approval)</h5>
+        <div class="card mb-4">
+            <ul class="list-group list-group-flush">
+                {% for student in pending_students %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <button
+                            type="button"
+                            class="btn btn-link p-0 text-start fw-semibold detail-trigger"
+                            data-bs-toggle="modal"
+                            data-bs-target="#entityDetailsModal"
+                            data-entity="student"
+                            data-name="{{ student.name }}"
+                            data-roll-no="{{ student.roll_no }}"
+                            data-email="{{ student.email }}"
+                            data-phone="{{ student.phone_no }}"
+                            data-gender="{{ student.gender }}"
+                            data-dob="{{ student.dob }}"
+                            data-location="{{ student.location }}"
+                            data-dept="{{ student.dept_id }}"
+                            data-grad-year="{{ student.graduation_year }}"
+                            data-cgpa="{{ student.cgpa }}"
+                            data-backlogs="{{ 'Yes' if student.has_backlogs else 'No' }}"
+                            data-status="{{ student.approval_status }}"
+                            data-blacklisted="{{ 'Yes' if student.is_blacklisted else 'No' }}"
+                        >
+                            {{ student.name }} ({{ student.roll_no }})
+                        </button><br>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('admin_student_action', roll_no=student.roll_no, action='approve') }}" class="btn btn-sm btn-outline-success">Approve</a>
+                        <a href="{{ url_for('admin_student_action', roll_no=student.roll_no, action='reject') }}" class="btn btn-sm btn-outline-danger">Reject</a>
+                    </div>
+                </li>
+                {% else %}
+                <li class="list-group-item text-muted">No pending student registrations.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <h5 class="mb-3">Ongoing Drives</h5>
+        <div class="card mb-4">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Sr No.</th>
+                        <th>Drive Name</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for drive in drives if drive.status == 'approved' %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <button
+                                type="button"
+                                class="btn btn-link p-0 text-start detail-trigger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#entityDetailsModal"
+                                data-entity="drive"
+                                data-drive-id="{{ drive.id }}"
+                                data-drive-name="{{ drive.name }}"
+                                data-job-title="{{ drive.job_title }}"
+                                data-company-id="{{ drive.comp_id }}"
+                                data-job-desc="{{ drive.job_desc }}"
+                                data-min-cgpa="{{ drive.min_cgpa }}"
+                                data-grad-year="{{ drive.eligible_grad_yr }}"
+                                data-salary="{{ drive.salary }}"
+                                data-location="{{ drive.location }}"
+                                data-deadline="{{ drive.deadline }}"
+                                data-status="{{ drive.status }}"
+                                data-remarks="{{ drive.remarks }}"
+                            >
+                                {{ drive.name }}
+                            </button>
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ url_for('admin_drive_action', drive_id=drive.id, action='reject') }}" class="btn btn-sm btn-outline-danger">Reject</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" class="text-center text-muted">No ongoing drives.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h5 class="mb-3">Pending Drives</h5>
+        <div class="card mb-4">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Sr No.</th>
+                        <th>Drive Name</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for drive in pending_drives %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <button
+                                type="button"
+                                class="btn btn-link p-0 text-start detail-trigger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#entityDetailsModal"
+                                data-entity="drive"
+                                data-drive-id="{{ drive.id }}"
+                                data-drive-name="{{ drive.name }}"
+                                data-job-title="{{ drive.job_title }}"
+                                data-company-id="{{ drive.comp_id }}"
+                                data-job-desc="{{ drive.job_desc }}"
+                                data-min-cgpa="{{ drive.min_cgpa }}"
+                                data-grad-year="{{ drive.eligible_grad_yr }}"
+                                data-salary="{{ drive.salary }}"
+                                data-location="{{ drive.location }}"
+                                data-deadline="{{ drive.deadline }}"
+                                data-status="{{ drive.status }}"
+                                data-remarks="{{ drive.remarks }}"
+                            >
+                                {{ drive.name }}
+                            </button>
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('admin_drive_action', drive_id=drive.id, action='approve') }}" class="btn btn-sm btn-outline-success">Approve</a>
+                                <a href="{{ url_for('admin_drive_action', drive_id=drive.id, action='reject') }}" class="btn btn-sm btn-outline-danger">Reject</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" class="text-center text-muted">No pending drives.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h5 class="mb-3">Student Applications</h5>
+        <div class="card mb-5">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Sr No.</th>
+                        <th>Name</th>
+                        <th>Drive</th>
+                        <th>Date</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ app.student_id }}</td> <td>{{ app.drive_id }}</td>
+                        <td>{{ app.date_applied.strftime('%d/%m/%Y') if app.date_applied else 'N/A' }}</td>
+                        <td class="text-end">
+                            <a href="#" class="btn btn-sm btn-outline-primary">View</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center text-muted">No student applications yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="entityDetailsModal" tabindex="-1" aria-labelledby="entityDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="entityDetailsModalLabel">Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="card border-0">
+                    <div class="card-body p-0" id="entityDetailsBody"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const detailButtons = document.querySelectorAll('.detail-trigger');
+    const titleNode = document.getElementById('entityDetailsModalLabel');
+    const bodyNode = document.getElementById('entityDetailsBody');
+
+    const renderRows = (rows) => rows.map((row) => {
+        const value = row.value !== undefined && row.value !== null && row.value !== '' ? row.value : '-';
+        return `<tr><th class="w-25">${row.label}</th><td>${value}</td></tr>`;
+    }).join('');
+
+    detailButtons.forEach((btn) => {
+        btn.addEventListener('click', function () {
+            const d = this.dataset;
+            let title = 'Details';
+            let rows = [];
+
+            if (d.entity === 'company') {
+                title = `Company: ${d.companyName || ''}`;
+                rows = [
+                    { label: 'Company ID', value: d.companyId },
+                    { label: 'Company Name', value: d.companyName },
+                    { label: 'Email', value: d.email },
+                    { label: 'Website', value: d.website },
+                    { label: 'HR Name', value: d.hrName },
+                    { label: 'HR Email', value: d.hrEmail },
+                    { label: 'HR Phone', value: d.hrPhone },
+                    { label: 'Status', value: d.status },
+                    { label: 'Blacklisted', value: d.blacklisted },
+                    { label: 'Description', value: d.description }
+                ];
+            } else if (d.entity === 'student') {
+                title = `Student: ${d.name || ''}`;
+                rows = [
+                    { label: 'Roll No', value: d.rollNo },
+                    { label: 'Name', value: d.name },
+                    { label: 'Email', value: d.email },
+                    { label: 'Phone', value: d.phone },
+                    { label: 'Gender', value: d.gender },
+                    { label: 'Date of Birth', value: d.dob },
+                    { label: 'Location', value: d.location },
+                    { label: 'Department', value: d.dept },
+                    { label: 'Graduation Year', value: d.gradYear },
+                    { label: 'CGPA', value: d.cgpa },
+                    { label: 'Has Backlogs', value: d.backlogs },
+                    { label: 'Status', value: d.status },
+                    { label: 'Blacklisted', value: d.blacklisted }
+                ];
+            } else if (d.entity === 'drive') {
+                title = `Drive: ${d.driveName || ''}`;
+                rows = [
+                    { label: 'Drive ID', value: d.driveId },
+                    { label: 'Drive Name', value: d.driveName },
+                    { label: 'Job Title', value: d.jobTitle },
+                    { label: 'Company ID', value: d.companyId },
+                    { label: 'Job Description', value: d.jobDesc },
+                    { label: 'Min CGPA', value: d.minCgpa },
+                    { label: 'Eligible Grad Year', value: d.gradYear },
+                    { label: 'Salary', value: d.salary },
+                    { label: 'Location', value: d.location },
+                    { label: 'Deadline', value: d.deadline },
+                    { label: 'Status', value: d.status },
+                    { label: 'Remarks', value: d.remarks }
+                ];
+            }
+
+            titleNode.textContent = title;
+            bodyNode.innerHTML = `<table class="table table-bordered mb-0">${renderRows(rows)}</table>`;
+        });
+    });
+});
+</script>
+{% endblock %}

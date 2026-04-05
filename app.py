@@ -17,7 +17,7 @@ db.init_app(app)
 #Login and Auth
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'auth.login'
+login_manager.login_view = 'login'
 
 @login_manager.user_loader #Run this fn everytime the user clicks a new page 
 def load_user(user_id):
@@ -64,6 +64,18 @@ def login():
                 flash('User not found or invalid password', 'danger')
                 return redirect(url_for('login'))
             
+            if user.is_blacklisted:
+                flash('Your account has been blacklisted.', 'danger')
+                return redirect(url_for('login'))
+            
+            if user.approval_status == 'pending':
+                flash('Your registration is waiting for Admin approval.', 'warning')
+                return redirect(url_for('login'))
+            
+            elif user.approval_status == 'rejected':
+                flash('Your registration has been rejected by Admin.', 'danger')
+                return redirect(url_for('login'))
+
             login_user(user)
             flash(f"Welcome {user.roll_no} to student portal!", 'success')
             return redirect(url_for('student_dashboard'))
@@ -73,6 +85,10 @@ def login():
 
             if not user or not user.check_password(password):
                 flash('User not found or invalid password', 'danger')
+                return redirect(url_for('login'))
+            
+            if user.is_blacklisted:
+                flash('Your account has been blacklisted.', 'danger')
                 return redirect(url_for('login'))
             
             if user.approval_status == 'pending':
@@ -120,10 +136,12 @@ def register_student():
         new_student.set_password(request.form.get('password'))
         db.session.add(new_student)
         db.session.commit()
-        flash('Student Registration Succesful', 'success')
+        flash('Student Registration Successful. Please wait for admin approval to login', 'success')
         return redirect(url_for('login'))
     
-    return render_template('register_student.html')
+    departments = Department.query.all()
+    
+    return render_template('register_student.html', departments=departments)
 
 @app.route('/register/company', methods=['GET', 'POST'])
 def register_company():
@@ -166,33 +184,61 @@ def logout():
 def admin_dashboard():
     if not current_user.is_authenticated or not current_user.get_id().startswith('admin_'):
         return "Unauthorized Access : Not an Admin ", 403
+
+    company_search = request.args.get('company_search', '')
+    student_search = request.args.get('student_search', '')
+    drive_search = request.args.get('drive_search', '')
     
     stats = {
         'total_companies' : Company.query.count(),
         'total_students' : Student.query.count(),
         'total_drives' : PlacementDrive.query.count(),
+        'pending_students' : Student.query.filter_by(approval_status='pending').count(),
         'total_applications' : Application.query.count(),
         'pending_companies' : Company.query.filter_by(approval_status='pending').count(),
         'pending_drives' : PlacementDrive.query.filter_by(status='Pending').count()
     }
 
-    return render_template('admin_dashboard.html', stats = stats)
-
-@app.route('/admin/companies') #Fetch and manage comapny details
-@login_required
-def admin_companies():
-    if not current_user.is_authenticated or not current_user.get_id().startswith('admin_'):
-        return "Unauthorized Access : Not an Admin ", 403
-    
-    search_query = request.args.get('search', '')
-    if search_query:
+    if company_search:
         companies = Company.query.filter(
-            (Company.company_name.ilike(f'%{search_query}%'))
+            Company.company_name.ilike(f'%{company_search}%')
         ).all()
     else:
-        companies = Company.query.all()
+        companies = Company.query.filter_by(approval_status='approved').all()
 
-    return render_template('admin_companies.html', companies=companies, search_query=search_query)
+    if student_search:
+        students = Student.query.filter(
+            (Student.name.ilike(f'%{student_search}%')) |
+            (Student.roll_no.ilike(f'%{student_search}%')) |
+            (Student.phone_no.ilike(f'%{student_search}%'))
+        ).all()
+    else:
+        students = Student.query.filter_by(approval_status='approved').all()
+
+    if drive_search:
+        drives = PlacementDrive.query.filter(
+            PlacementDrive.name.ilike(f'%{drive_search}%')
+        ).all()
+    else:
+        drives = PlacementDrive.query.filter_by(status='approved').all()
+
+    pending_students = Student.query.filter_by(approval_status='pending').all()
+    pending_companies = Company.query.filter_by(approval_status='pending').all()
+    pending_drives = PlacementDrive.query.filter_by(status='Pending').all()
+
+    return render_template(
+        'admin_dashboard.html',
+        stats=stats,
+        companies=companies,
+        students=students,
+        drives=drives,
+        pending_students=pending_students,
+        pending_companies=pending_companies,
+        pending_drives=pending_drives,
+        company_search=company_search,
+        student_search=student_search,
+        drive_search=drive_search)
+
 
 @app.route('/admin/company/action/<int:company_id>/<action>') #Approve/Reject/Blacklist the company
 @login_required
@@ -204,11 +250,11 @@ def admin_company_action(company_id, action):
 
     if action not in ['approve', 'reject', 'blacklist']:
         flash('Invalid Action', 'danger')
-        return redirect(url_for('admin_companies'))
+        return redirect(url_for('admin_dashboard'))
     
     if not company:
         flash('comapny not found', 'danger')
-        return redirect(url_for('admin_companies'))
+        return redirect(url_for('admin_dashboard'))
 
     if action == 'approve':
         if company.approval_status == 'approved':
@@ -230,28 +276,10 @@ def admin_company_action(company_id, action):
             flash(f"{company.company_name} has been blacklisted", 'danger')
     
     db.session.commit()
-    return redirect(url_for('admin_companies'))
+    return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/students') #Fetch and manage student details
-@login_required
-def admin_students():
-    if not current_user.is_authenticated or not current_user.get_id().startswith('admin_'):
-        return "Unauthorized Access : Not an Admin ", 403
-    
-    search_query = request.args.get('search', '')
 
-    if search_query:
-        students = Student.query.filter(
-            (Student.name.ilike(f'%{search_query}%')) |
-            (Student.roll_no.ilike(f'%{search_query}%')) | 
-            (Student.phone_no.ilike(f'%{search_query}%'))
-        ).all()
-    else:
-        students = Student.query.all()
-
-    return render_template('admin_students.html', students=students, search_query=search_query)
-
-@app.route('/admin/student/action/<string:roll_no>/<action>') #Approve/Reject the student
+@app.route('/admin/student/action/<string:roll_no>/<action>') #Approve/Reject/Blacklist the student
 @login_required
 def admin_student_action(roll_no, action):
     if not current_user.is_authenticated or not current_user.get_id().startswith('admin_'):
@@ -261,11 +289,11 @@ def admin_student_action(roll_no, action):
 
     if action not in ['approve', 'reject', 'blacklist']:
         flash('Invalid Action', 'danger')
-        return redirect(url_for('admin_students'))
+        return redirect(url_for('admin_dashboard'))
     
     if not student:
         flash('Student not found', 'danger')
-        return redirect(url_for('admin_students'))
+        return redirect(url_for('admin_dashboard'))
     
     if action == 'approve':
         if student.approval_status == 'approved':
@@ -289,24 +317,7 @@ def admin_student_action(roll_no, action):
             flash(f"{student.name} has been blacklisted", 'danger')
     
     db.session.commit()
-    return redirect(url_for('admin_students'))
-
-@app.route('/admin/drives') #Fetch and manage Placement Drives
-@login_required
-def admin_drives():
-    if not current_user.is_authenticated or not current_user.get_id().startswith('admin_'):
-        return "Unauthorized Access : Not an Admin ", 403
-    
-    search_query = request.args.get('search', '')
-
-    if search_query:
-        drives = PlacementDrive.query.filter(
-            (PlacementDrive.name.ilike(f'%{search_query}%'))
-        ).all()
-    else:
-        drives = PlacementDrive.query.all()
-
-    return render_template('admin_drives.html', drives=drives, search_query=search_query)
+    return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/drive/action/<int:drive_id>/<action>') #Approve/Reject the Placement Drive
 @login_required
@@ -318,11 +329,11 @@ def admin_drive_action(drive_id, action):
 
     if action not in ['approve', 'reject']:
         flash('Invalid Action', 'danger')
-        return redirect(url_for('admin_drives'))
+        return redirect(url_for('admin_dashboard'))
     
     if not drive:
         flash('Placement Drive not found', 'danger')
-        return redirect(url_for('admin_drives'))
+        return redirect(url_for('admin_dashboard'))
     
     if action == 'approve':
         if drive.status == 'approved':
@@ -338,7 +349,7 @@ def admin_drive_action(drive_id, action):
             flash(f"{drive.name} has been rejected", 'danger')
     
     db.session.commit()
-    return redirect(url_for('admin_drives'))
+    return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/applications') #Fetch and manage student job applications
 @login_required
@@ -349,6 +360,14 @@ def admin_applications():
     applications = Application.query.all()
     return render_template('admin_applications.html', applications=applications)
 
+@app.route('/admin/student/<string:roll_no>') #View student profile
+@login_required
+def admin_student_profile(roll_no):
+    if not current_user.is_authenticated or not current_user.get_id().startswith('admin_'):
+        return "Unauthorized Access : Not an Admin ", 403
+    
+    student = Student.query.get_or_404(roll_no)
+    return render_template('admin_student_profile.html', student=student)
 
 @app.route('/student/dashboard')
 @login_required
@@ -365,7 +384,7 @@ def student_dashboard():
 def company_dashboard():
     if not current_user.is_authenticated or current_user.get_id().startswith('company_'):
         return "Unauthorized Access : Not a Company ", 403
-    
+
     return render_template('company_dashboard.html')
 
 @app.route('/')

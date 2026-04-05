@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card mt-4 mb-5">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">Company Registration</h4>
+            </div>
+            <div class="card-body p-4">
+
+                <form method="POST" action="{{ url_for('register_company') }}">
+                    
+                    <h5 class="border-bottom pb-2 mb-3">Company Details</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Company Name :<span class="text-danger">*</span></label>
+                            <input type="text" name="company_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Company Email Address :<span class="text-danger">*</span></label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Website URL :</label>
+                            <input type="url" name="website" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Company Description : <span class="text-danger">*</span></label>
+                        <textarea name="company_desc" class="form-control" rows="3" required></textarea>
+                    </div>
+
+                    <h5 class="border-bottom pb-2 mb-3">HR Point of Contact</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">HR Name : <span class="text-danger">*</span></label>
+                            <input type="text" name="hr_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">HR Email : <span class="text-danger">*</span></label>
+                            <input type="email" name="hr_email" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">HR Phone : <span class="text-danger">*</span></label>
+                            <input type="text" name="hr_phone" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <h5 class="border-bottom pb-2 mb-3">Security</h5>
+                    <div class="mb-4">
+                        <label class="form-label">Create Password : <span class="text-danger">*</span></label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+
+                    <div class="text-center mb-3">
+                        <a href="{{ url_for('login') }}" class="text-decoration-none">Already have an account? Login</a>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg">Submit Registration</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -145,7 +145,7 @@ class PlacementDrive(db.Model):
     location = db.Column(db.String(255))
     deadline = db.Column(db.DateTime, nullable=False)
     
-    status = db.Column(db.String(50), nullable=False, default='Pending') #Pending/Approved/Rejected
+    status = db.Column(db.String(50), nullable=False, default='Pending') #Pending/Approved/Rejected/Closed
     remarks = db.Column(db.String(255))
     
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now)

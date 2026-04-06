@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-lg-8 border border-dark p-0 bg-white"> 
+
+        <div class="p-4">
+            
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h4 class="mb-4">Student Application</h4>
+                    
+                    <p class="mb-2"><strong>Student Roll No:</strong> {{ student.roll_no }}</p>
+                    <p class="mb-2"><strong>Name:</strong> {{ student.name }}</p>
+                    <p class="mb-2"><strong>Skills:</strong> {{ student.skills or 'Not Provided' }}</p>
+                    <p class="mb-2"><strong>Drive:</strong> {{ application.drive.name }}</p>
+                    <p class="mb-4"><strong>Job Title:</strong> {{ application.drive.job_title }}</p>
+
+                    <div class="d-flex align-items-center gap-3 mt-4">
+                        {% if student.resume_link %}
+                            <a href="{{ student.resume_link }}" target="_blank" class="btn btn-outline-primary rounded-pill px-4">view resume</a>
+                        {% else %}
+                            <button class="btn btn-outline-secondary rounded-pill px-4" disabled>No Resume</button>
+                        {% endif %}
+                        
+                        <form method="POST" action="{{ url_for('company_application_action', app_id=application.id, action='review') }}" class="d-flex align-items-center gap-2 m-0">
+                            <select name="status" class="form-select border-dark" style="width: auto;">
+                                <option value="shortlisted" {% if application.application_status == 'shortlisted' %}selected{% endif %}>Shortlist</option>
+                                <option value="selected" {% if application.application_status == 'selected' %}selected{% endif %}>Select</option>
+                                <option value="rejected" {% if application.application_status == 'rejected' %}selected{% endif %}>Reject</option>
+                            </select>
+                            <button type="submit" class="btn btn-outline-success rounded-pill px-4">save</button>
+                        </form>
+                    </div>
+
+                </div>
+                
+                <div class="col-md-4 text-center d-flex flex-column justify-content-center">
+                    <img src="https://ui-avatars.com/api/?name={{ student.name }}&background=random&size=150" class="rounded-circle img-thumbnail mb-3" alt="Student Profile">
+                </div>
+            </div>
+
+            <div class="text-end mt-5 border-top pt-3">
+                <a href="{{ url_for('company_drive_action', action='fetch_applications', drive_id=application.drive_id) }}" class="btn btn-outline-secondary rounded-pill px-4">back</a>
+            </div>
+            
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -471,14 +471,166 @@ def admin_applications():
     return render_template('admin_applications.html', applications=applications)
 
 
-
+#Company Dashboard
 @app.route('/company/dashboard')
 @login_required
 def company_dashboard():
     if not current_user.is_authenticated or not current_user.get_id().startswith('company_'):
         return "Unauthorized Access : Not a Company ", 403
 
-    return render_template('company_dashboard.html')
+    if current_user.approval_status == 'pending':
+        logout_user()
+        flash('Company registration not yet approved by admin', 'warning')
+        return redirect(url_for('login'))
+    
+    if current_user.approval_status == 'rejected':
+        logout_user()
+        flash('Company registration rejected by admin', 'danger')
+        return redirect(url_for('login'))
+
+    if current_user.is_blacklisted:
+        logout_user()
+        flash('Company is blacklisted', 'danger')
+        return redirect(url_for('login'))
+    
+    company = Company.query.filter_by(company_id=current_user.company_id).first()
+
+    if not company:
+        flash('Company profile not found', 'danger')
+        return redirect(url_for('login'))
+
+    drives = PlacementDrive.query.filter_by(comp_id=company.company_id).all()
+
+    drive_ids = []
+
+    for i in drives:
+        drive_ids.append(i.id)
+    
+    if drive_ids:
+        applications = Application.query.filter(Application.drive_id.in_(drive_ids)).all()
+    else:
+        applications = []    
+
+    upcoming_drives = PlacementDrive.query.filter(
+        PlacementDrive.comp_id == company.company_id,
+        PlacementDrive.status.in_(['Active', 'Pending', 'approved'])
+    ).all()
+    closed_drives = PlacementDrive.query.filter(
+        PlacementDrive.comp_id == company.company_id,
+        PlacementDrive.status.in_(['Closed', 'Rejected'])
+    ).all()
+
+    return render_template('company_dashboard.html', company=company, upcoming_drives=upcoming_drives, closed_drives=closed_drives, applications=applications)
+
+@app.route('/company/drive/create', methods=['GET', 'POST']) #Create a new drive
+@login_required
+def company_create_drive():
+    if not current_user.is_authenticated or not current_user.get_id().startswith('company_'):
+        return "Unauthorized Access : Not a Company ", 403
+    
+    company = Company.query.filter_by(company_id=current_user.company_id).first()
+
+    if request.method == 'POST':
+        name = request.form.get('name')
+        job_title = request.form.get('job_title')
+        job_desc = request.form.get('job_desc')
+        min_cgpa = float(request.form.get('min_cgpa'))
+        eligible_grad_yr = request.form.get('eligible_grad_yr')
+        salary = int(request.form.get('salary'))
+        location = request.form.get('location')
+        deadline = datetime.strptime(request.form.get('deadline'), '%Y-%m-%d')
+
+        eligible_departments_ids = request.form.getlist('departments') 
+
+        new_drive = PlacementDrive(
+            name=name,
+            comp_id=company.company_id,
+            job_title=job_title,
+            job_desc=job_desc,
+            min_cgpa=min_cgpa,
+            eligible_grad_yr=eligible_grad_yr,
+            salary=salary,
+            location=location,
+            deadline=deadline
+        )
+        db.session.add(new_drive)
+        db.session.commit()
+
+        for dept_id in eligible_departments_ids:
+            if dept_id and dept_id.strip():
+                new_dept = EligibleDepartments(drive_id=new_drive.id, dept_id=dept_id)
+                db.session.add(new_dept)
+        db.session.commit()
+
+        flash(f'{name} Drive created successfully!', 'success')
+        return redirect(url_for('company_dashboard'))
+    
+    all_depts = Department.query.all()    
+    return render_template('company_create_drive.html', company=company, departments=all_depts)
+
+@app.route('/company/drive/update/<int:drive_id>', methods=['POST']) #Update drive details
+@login_required
+def company_drive_update(drive_id):
+    if not current_user.is_authenticated or not current_user.get_id().startswith('company_'):
+        return "Unauthorized Access : Not a Company ", 403
+    
+    drive = PlacementDrive.query.filter_by(id=drive_id).first()
+    
+    if not drive:
+        flash('Drive not found', 'danger')
+        return redirect(url_for('company_dashboard'))
+    
+    drive.name = request.form.get('name', drive.name)
+    drive.job_title = request.form.get('job_title', drive.job_title)
+    drive.job_desc = request.form.get('job_desc', drive.job_desc)
+    drive.min_cgpa = float(request.form.get('min_cgpa', drive.min_cgpa)) if request.form.get('min_cgpa') else drive.min_cgpa
+    drive.eligible_grad_yr = request.form.get('eligible_grad_yr', drive.eligible_grad_yr)
+    drive.salary = int(request.form.get('salary', drive.salary)) if request.form.get('salary') else drive.salary
+    drive.location = request.form.get('location', drive.location)
+    
+    if request.form.get('deadline'):
+        drive.deadline = datetime.strptime(request.form.get('deadline'), '%Y-%m-%d')
+    
+    db.session.commit()
+    flash(f'{drive.name} updated successfully!', 'success')
+    return redirect(url_for('company_dashboard'))
+
+@app.route('/company/drive/<string:action>/<int:drive_id>') #Take action on a drive
+@login_required
+def company_drive_action(action, drive_id):
+    drive = PlacementDrive.query.filter_by(id=drive_id).first()
+
+    if action == 'close':
+        drive.status = 'Closed'
+        db.session.commit()
+        flash(f'{drive.name} Drive closed successfully!', 'success')
+        return redirect(url_for('company_dashboard'))
+
+    if action == 'fetch_applications':
+        applications = Application.query.filter_by(drive_id=drive_id).all()
+        return render_template('company_drive_applications.html', drive=drive, applications=applications)
+    
+@app.route('/company/application/<int:app_id>/<string:action>', methods=['GET', 'POST']) #Take action on an application
+@login_required
+def company_application_action(app_id, action):
+    application = Application.query.filter_by(id=app_id).first()
+
+    if not application:
+        flash('Application not found', 'danger')
+        return redirect(url_for('company_dashboard'))
+    
+    student = Student.query.filter_by(roll_no=application.student_roll).first()
+
+    if request.method == 'POST':
+        if action == 'review':
+            new_status = request.form.get('status')
+            application.application_status = new_status
+            db.session.commit()
+            flash(f'Application status updated to {new_status}!', 'success')
+            return redirect(url_for('company_drive_applications', drive_id=application.drive_id))
+        
+    return render_template('company_review_application.html', application=application, student=student)
+
 
 @app.route('/')
 def home():

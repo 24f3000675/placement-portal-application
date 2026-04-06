@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-lg-10 p-0 bg-white" style="border: 2px solid #333;"> 
+
+        <div class="d-flex justify-content-between align-items-center p-3 bg-light" style="border-bottom: 2px solid #333;">
+            <h5 class="mb-0">Welcome {{ company.company_name }}!</h5>
+        </div>
+
+        <div class="p-4">
+            
+            <div class="mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0 text-secondary">Upcoming Drives :</h5>
+                    <a href="{{ url_for('company_create_drive') }}" class="btn btn-sm btn-outline-success px-3">Create Drive</a>
+                </div>
+                
+                <div style="border: 2px solid #333;">
+                    <table class="table table-borderless mb-0">
+                        <thead class="bg-light" style="border-bottom: 2px solid #333;">
+                            <tr>
+                                <th class="fw-normal pb-2 pt-2">Drive ID :</th>
+                                <th class="fw-normal pb-2 pt-2">Drive Name :</th>
+                                <th class="fw-normal pb-2 pt-2 text-end pe-4">Actions :</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for drive in upcoming_drives %}
+                            <tr style="border-bottom: 1px solid #ccc;">
+                                <td class="pt-3 ps-3">{{ loop.index }}.</td>
+                                <td class="pt-3 text-dark fw-bold">
+                                    {{ drive.name }}
+                                    {% if drive.status == 'Pending' %}
+                                        <span class="badge text-dark">Pending Admin Approval</span>
+                                    {% endif %}
+                                </td> 
+                                <td class="text-end pt-2 pb-2 pe-3" style="white-space: nowrap;">
+                                    <a href="{{ url_for('company_drive_action', action='fetch_applications', drive_id=drive.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-2">View</a>
+                                    <a href="{{ url_for('company_drive_action', action='close', drive_id=drive.id) }}" class="btn btn-sm btn-outline-danger rounded-pill px-2 ms-1">Close</a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted pt-4 pb-4">No upcoming drives posted.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div>
+                <h5 class="mb-2 text-secondary">Closed Drives : </h5>
+                <div style="border: 2px solid #333;">
+                    <table class="table table-borderless mb-0">
+                        <thead class="bg-light" style="border-bottom: 2px solid #333;">
+                            <tr>
+                                <th class="fw-normal pb-2 pt-2">Drive ID : </th>
+                                <th class="fw-normal pb-2 pt-2">Drive Name :</th>
+                                <th class="fw-normal pb-2 pt-2 text-end pe-4">Actions :</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for drive in closed_drives %}
+                            <tr style="border-bottom: 1px solid #ccc;">
+                                <td class="pt-3 ps-3">{{ loop.index }}.</td>
+                                <td class="pt-3 text-muted">{{ drive.name }}</td> 
+                                <td class="text-end pt-2 pb-2 pe-3">
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted pt-4 pb-4">No closed drives.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+        </div>
+
+    </div>
+</div>
+{% endblock %}

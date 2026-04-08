@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-lg-10 p-0 bg-white" style="border: 2px solid #333;"> 
+
+        <div class="d-flex justify-content-between align-items-center p-3 bg-light" style="border-bottom: 2px solid #333;">
+            <h5 class="mb-0">Reviewing Student: <span class="fw-bold">{{ student.name }}</span></h5>
+            <div class="small">
+                <a href="{{ url_for('company_drive_action', action='fetch_applications', drive_id=application.drive_id) }}" class="text-decoration-none text-dark fw-bold">&larr; Back to Applicant List</a>
+            </div>
+        </div>
+
+        <div class="p-4">
+            
+            <div class="row mb-4">
+                
+                <div class="col-md-3 text-center d-flex flex-column align-items-center border-end border-dark pe-4">                    
+                    <div class="w-100 text-start mt-3">
+                        <p class="mb-1 fw-bold text-secondary text-uppercase small">Applied For</p>
+                        <p class="mb-1 fw-bold fs-5">{{ application.drive.job_title }}</p>
+                        <p class="mb-3 small text-muted">Drive: {{ application.drive.name }}</p>
+                        
+                        <p class="mb-1 fw-bold text-secondary text-uppercase small">Current Status</p>
+                        <span class="badge bg-dark px-3 py-2 w-100 fs-6">
+                            {{ application.application_status | title }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="col-md-9 ps-4">
+                    
+                    <h5 class="fw-bold mb-3 border-bottom border-dark pb-2">Personal Information</h5>
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-2"><strong class="text-secondary">Name:</strong> {{ student.name }}</div>
+                        <div class="col-md-6 mb-2"><strong class="text-secondary">Roll No:</strong> {{ student.roll_no }}</div>
+                        <div class="col-md-6 mb-2"><strong class="text-secondary">Email:</strong> <a href="mailto:{{ student.email }}" class="text-decoration-none">{{ student.email }}</a></div>
+                        <div class="col-md-6 mb-2"><strong class="text-secondary">Phone:</strong> {{ student.phone_no }}</div>
+                        <div class="col-md-6 mb-2"><strong class="text-secondary">Gender:</strong> {{ student.gender }}</div>
+                        <div class="col-md-6 mb-2"><strong class="text-secondary">DOB:</strong> {{ student.dob.strftime('%d %b %Y') if student.dob else 'N/A' }}</div>
+                        <div class="col-md-12 mb-2"><strong class="text-secondary">Location:</strong> {{ student.location }}</div>
+                    </div>
+
+                    <h5 class="fw-bold mb-3 border-bottom border-dark pb-2">Academic Profile</h5>
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-2"><strong class="text-secondary">Department:</strong> {{ dept.dept }}</div>
+                        <div class="col-md-6 mb-2"><strong class="text-secondary">Graduation Year:</strong> {{ student.grad_yr }}</div>
+                        <div class="col-md-6 mb-2"><strong class="text-secondary">CGPA:</strong> {{ student.cgpa }}</div>
+                        <div class="col-md-6 mb-2"><strong class="text-secondary">Active Backlogs:</strong> 
+                            {% if student.backlogs and student.backlogs > 0 %}
+                                <span>{{ student.backlogs }}</span>
+                            {% else %}
+                                <span>0</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold mb-3 border-bottom border-dark pb-2">Skills :</h5>
+                    {% if skills %}
+                        <div class="row mb-4">
+                            <div class="col-md-12 mb-3">
+                                <p class="mb-0 p-2">{{ skills.skills or 'No skills listed.' }}</p>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <strong class="text-secondary">LinkedIn:</strong> 
+                                {% if skills.linkedin_url %}
+                                    <a href="{{ skills.linkedin_url }}" target="_blank" class="text-decoration-none">View Profile &#8599;</a>
+                                {% else %}
+                                    <span class="text-muted">Not Provided</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <strong class="text-secondary">GitHub:</strong> 
+                                {% if skills.github_url %}
+                                    <a href="{{ skills.github_url }}" target="_blank" class="text-decoration-none">View Profile &#8599;</a>
+                                {% else %}
+                                    <span class="text-muted">Not Provided</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning py-2 border-dark rounded-0 mb-4">
+                            The student has not updated their profile yet.
+                        </div>
+                    {% endif %}
+
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between p-3 mt-2 bg-light border-top border-dark">
+                
+                <div>
+                    {% if skills and skills.resume_link %}
+                        <a href="{{ skills.resume_link }}" target="_blank" class="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">Open Resume</a>
+                    {% else %}
+                        <button class="btn btn-secondary rounded-pill px-5 fw-bold" disabled>No Resume Uploaded</button>
+                    {% endif %}
+                </div>
+                
+                <form method="POST" action="{{ url_for('company_application_action', app_id=application.id, action='review') }}" class="d-flex align-items-center gap-2 m-0">
+                    <label class="fw-bold me-2 text-secondary">Update Decision:</label>
+                    <select name="status" class="form-select border-dark shadow-sm fw-bold" style="width: auto; min-width: 160px;">
+                        <option value="applied" {% if application.application_status == 'applied' %}selected{% endif %}>Pending Review</option>
+                        <option value="shortlisted" {% if application.application_status == 'shortlisted' %}selected{% endif %}>Shortlist</option>
+                        <option value="selected" {% if application.application_status == 'selected' %}selected{% endif %}>Select</option>
+                        <option value="rejected" {% if application.application_status == 'rejected' %}selected{% endif %}>Reject</option>
+                    </select>
+                    <button type="submit" class="btn btn-success rounded-pill px-4 shadow-sm fw-bold">Save Decision</button>
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-lg-8 p-0 bg-white" style="border: 2px solid #333;"> 
+
+        <div class="d-flex justify-content-between align-items-center p-3 bg-light" style="border-bottom: 2px solid #333;">
+            <h5 class="mb-0">Job Details</h5>
+            <a href="{{ url_for('student_dashboard') }}" class="text-decoration-none text-dark fw-bold small">&larr; Back to Dashboard</a>
+        </div>
+
+        <div class="p-4">
+            
+            <div class="mb-4 text-center">
+                <h3 class="fw-bold mb-1">{{ drive.job_title }}</h3>
+                <h5 class="text-secondary">{{ drive.company.company_name }}</h5>
+                {% if not is_drive_open %}
+                    <span class="badge bg-danger mt-2">This drive is no longer accepting applications.</span>
+                {% endif %}
+            </div>
+
+            <div style="border: 2px solid #333;" class="p-3 mb-4 bg-light">
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <strong>Drive Name:</strong> {{ drive.name }}
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <strong>Location:</strong> {{ drive.location or 'Not Specified' }}
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <strong>Salary (CTC):</strong> ₹{{ drive.salary if drive.salary else 'Not Disclosed' }}
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <strong>Application Deadline:</strong> {{ drive.deadline.strftime('%d %b, %Y') if drive.deadline else 'N/A' }}
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <strong>Min CGPA Required:</strong> {{ drive.min_cgpa }}
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <strong>Eligible Batch:</strong> {{ drive.eligible_grad_yr or 'Any' }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-5">
+                <h5 class="fw-bold border-bottom border-dark pb-2">Job Description & Requirements</h5>
+                <p style="white-space: pre-wrap;">{{ drive.job_desc }}</p>
+            </div>
+
+            <div class="d-flex justify-content-center border-top border-dark pt-4">
+                {% if existing_application %}
+                    <button class="btn btn-secondary rounded-pill px-5 py-2 fw-bold" disabled>You Have Already Applied</button>
+                {% elif not is_drive_open %}
+                    <button class="btn btn-danger rounded-pill px-5 py-2 fw-bold" disabled>Applications Closed</button>
+                {% else %}
+                    <form method="POST" action="{{ url_for('student_drive_details', drive_id=drive.id) }}">
+                        <button type="submit" class="btn btn-success rounded-pill px-5 py-2 fw-bold fs-5 shadow-sm">Apply Now</button>
+                    </form>
+                {% endif %}
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

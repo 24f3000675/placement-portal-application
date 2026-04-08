@@ -25,11 +25,11 @@ def load_user(user_id):
         role, uid = user_id.split('_', 1)
 
         if role == 'admin':
-            return Admin.query.get(int(uid))
+            return db.session.get(Admin, int(uid))
         elif role == 'student':
-            return Student.query.get(uid)
+            return db.session.get(Student, uid)
         elif role == 'company':
-            return Company.query.get(int(uid))
+            return db.session.get(Company, int(uid))
     except Exception as e:
         return None
     return None
@@ -378,7 +378,31 @@ def student_dashboard():
 
     applications = Application.query.filter_by(student_roll=current_user.roll_no).all()
 
-    return render_template('student_dashboard.html', companies=companies, applications=applications)
+    search_query = request.args.get('q', '').strip()
+
+    query = PlacementDrive.query.join(Company, PlacementDrive.comp_id == Company.company_id).filter(
+        Company.approval_status == 'approved',
+        PlacementDrive.status.in_(['approved', 'Approved', 'Active'])
+    )
+
+    if search_query:
+        search_term = f"%{search_query}%"
+        query = query.filter(
+            db.or_(
+                PlacementDrive.job_title.ilike(search_term),
+                Company.company_name.ilike(search_term) 
+            )
+        )
+
+    available_drives = query.order_by(PlacementDrive.deadline.asc()).all()
+
+    return render_template(
+        'student_dashboard.html',
+        companies=companies,
+        applications=applications,
+        available_drives=available_drives,
+        search_query=search_query
+    )
 
 @app.route('/student/profile/edit', methods=['GET', 'POST']) #Create and edit a student's profile 
 @login_required
@@ -419,15 +443,18 @@ def student_company(company_id):
         flash('Company not found', 'danger')
         return redirect(url_for('student_dashboard'))
     
-    company = Company.query.filter_by(company_id=company_id).all()
+    company = Company.query.filter_by(company_id=company_id).first()
 
     if not company:
         flash('Requested Company does not exist', 'warning')
         return redirect(url_for('student_dashboard'))
-    
-    drive = PlacementDrive.query.filter_by(comp_id=company_id).first()
 
-    return render_template('student_company.html', company=company, drive=drive)
+    active_drives = PlacementDrive.query.filter(
+        PlacementDrive.comp_id == company_id,
+        PlacementDrive.status.in_(['approved', 'Approved', 'Active'])
+    ).order_by(PlacementDrive.deadline.asc()).all()
+
+    return render_template('student_company.html', company=company, active_drives=active_drives)
 
 
 @app.route('/student/drive/<int:drive_id>', methods=['GET', 'POST']) #View drive details
@@ -447,10 +474,15 @@ def student_drive_details(drive_id):
         return redirect(url_for('student_dashboard'))
 
     existing_application = Application.query.filter_by(student_roll=current_user.roll_no, drive_id=drive_id).first()
+    is_drive_open = drive.status in ['approved', 'Approved', 'Active']
+    if drive.deadline:
+        is_drive_open = is_drive_open and drive.deadline >= datetime.now()
 
     if request.method == 'POST':
         if existing_application:
             flash('You have already applied for this drive', 'warning')
+        elif not is_drive_open:
+            flash('This drive is no longer accepting applications.', 'danger')
         else:
             new_application = Application(student_roll=current_user.roll_no, drive_id=drive_id, application_status='applied')
             db.session.add(new_application)
@@ -458,7 +490,7 @@ def student_drive_details(drive_id):
             flash(f'Application submitted successfully for {drive.name}!', 'success')
         return redirect(url_for('student_dashboard'))
     
-    return render_template('student_drive_details.html', drive=drive, existing_application=existing_application)
+    return render_template('student_drive_details.html', drive=drive, existing_application=existing_application, is_drive_open=is_drive_open)
 
 
 @app.route('/admin/applications') #Fetch and manage student job applications
@@ -598,6 +630,9 @@ def company_drive_update(drive_id):
 @app.route('/company/drive/<string:action>/<int:drive_id>') #Take action on a drive
 @login_required
 def company_drive_action(action, drive_id):
+    if not current_user.is_authenticated or not current_user.get_id().startswith('company_'):
+        return "Unauthorized Access : Not a Company ", 403
+    
     drive = PlacementDrive.query.filter_by(id=drive_id).first()
 
     if action == 'close':
@@ -613,13 +648,20 @@ def company_drive_action(action, drive_id):
 @app.route('/company/application/<int:app_id>/<string:action>', methods=['GET', 'POST']) #Take action on an application
 @login_required
 def company_application_action(app_id, action):
+    if not current_user.is_authenticated or not current_user.get_id().startswith('company_'):
+        return "Unauthorized Access : Not a Company ", 403
+    
     application = Application.query.filter_by(id=app_id).first()
+
+    student = Student.query.filter_by(roll_no=application.student_roll).first()
+
+    student_skills = Skills.query.filter_by(student_roll=student.roll_no).first()
+
+    dept = Department.query.filter_by(dept_id=student.dept_id).first()
 
     if not application:
         flash('Application not found', 'danger')
         return redirect(url_for('company_dashboard'))
-    
-    student = Student.query.filter_by(roll_no=application.student_roll).first()
 
     if request.method == 'POST':
         if action == 'review':
@@ -627,9 +669,9 @@ def company_application_action(app_id, action):
             application.application_status = new_status
             db.session.commit()
             flash(f'Application status updated to {new_status}!', 'success')
-            return redirect(url_for('company_drive_applications', drive_id=application.drive_id))
+            return redirect(url_for('company_drive_action', action='fetch_applications', drive_id=application.drive_id))
         
-    return render_template('company_review_application.html', application=application, student=student)
+    return render_template('company_review_application.html', application=application, student=student, skills=student_skills, dept=dept)
 
 
 @app.route('/')

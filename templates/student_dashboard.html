@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="row justify-content-center mt-4 mb-5">
-    <div class="col-lg-10 border border-dark p-0 bg-white"> 
+    <div class="col-lg-10 border border-dark p-0 bg-white">
 
         <div class="d-flex justify-content-between align-items-center p-3 border-bottom border-dark bg-light">
             <h5 class="mb-0">Welcome {{ current_user.name }}!</h5>
@@ -12,17 +12,51 @@
         </div>
 
         <div class="p-4">
-            
-            <h5 class="mb-3">Organizations</h5>
-            <div class="border border-dark p-3 mb-5">   
-                {% for company in companies %}
-                <div class="d-flex justify-content-between align-items-center border border-dark p-2 mb-3 bg-light">
-                    <span class="text-dark fw-bold ms-2">{{ company.company_name }}</span>
-                    <a href="{{ url_for('student_company', company_id=company.company_id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-4">view details</a>
-                </div>
-                {% else %}
-                <p class="text-muted ms-2 mb-0">No organizations are currently recruiting.</p>
-                {% endfor %}
+            <form method="GET" action="{{ url_for('student_dashboard') }}" class="d-flex gap-2">
+                <input type="text" name="q" class="form-control border-dark"
+                    placeholder="Search by company or job title." value="{{ search_query }}">
+                <button type="submit" class="btn btn-dark px-4">Search</button>
+                {% if search_query %}
+                <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary">Clear</a>
+                {% endif %}
+            </form>
+            <h5 class="mb-3">Available Job Postings</h5>
+            <div class="border border-dark p-3 mb-5">
+                <table class="table table-borderless table-hover mb-0">
+                    <thead class="border-bottom border-dark">
+                        <tr>
+                            <th class="fw-bold pb-2">Company</th>
+                            <th class="fw-bold pb-2">Job Title</th>
+                            <th class="fw-bold pb-2">Deadline</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for drive in available_drives %}
+                        <tr class="border-bottom align-middle">
+                            <td class="pt-3 ps-3 fw-bold">
+                                <a href="{{ url_for('student_company', company_id=drive.company.company_id) }}"
+                                    class="text-decoration-none text-primary">
+                                    {{ drive.company.company_name }}
+                                </a>
+                            </td>
+                            <td class="pt-3">{{ drive.job_title }}</td>
+                            <td class="pt-3">{{ drive.deadline.strftime('%d/%m/%Y') }}</td>
+                            <td class="text-end pt-2 pb-2">
+                                <a href="{{ url_for('student_drive_details', drive_id=drive.id) }}"
+                                    class="btn btn-sm btn-outline-primary rounded-pill px-4">View & Apply</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted pt-4 pb-2">
+                                {% if search_query %} No jobs match "{{ search_query }}". {% else %} No active job
+                                postings right now. {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
 
             <h5 class="mb-3">Applied Drives</h5>
@@ -42,26 +76,27 @@
                         {% for app in applications %}
                         <tr class="border-bottom align-middle">
                             <td class="pt-3">{{ loop.index }}.</td>
-                            <td class="pt-3">{{ app.drive.name }}</td> 
-                            <td class="pt-3">{{ app.company.company_name }}</td>
-                            <td class="pt-3">{{ app.date_applied.strftime('%d/%m/%Y') }}</td>
-                            
+                            <td class="pt-3">{{ app.drive.name }}</td>
+                            <td class="pt-3">{{ app.drive.company.company_name }}</td>
+                            <td class="pt-3">{{ app.applied_on.strftime('%d/%m/%Y') }}</td>
+
                             <td class="pt-3">
-                                {% if app.status == 'Applied' %}
-                                    <span class="badge bg-secondary">Applied</span>
-                                {% elif app.status == 'Shortlisted' %}
-                                    <span class="badge bg-info text-dark">Shortlisted</span>
-                                {% elif app.status == 'Selected' %}
-                                    <span class="badge bg-success">Selected</span>
-                                {% elif app.status == 'Rejected' %}
-                                    <span class="badge bg-danger">Rejected</span>
+                                {% if app.application_status == 'applied' %}
+                                <span class="badge bg-secondary">Applied</span>
+                                {% elif app.application_status == 'shortlisted' %}
+                                <span class="badge bg-info text-dark">Shortlisted</span>
+                                {% elif app.application_status == 'selected' %}
+                                <span class="badge bg-success">Selected</span>
+                                {% elif app.application_status == 'rejected' %}
+                                <span class="badge bg-danger">Rejected</span>
                                 {% else %}
-                                    <span class="badge bg-light text-dark">{{ app.status }}</span>
+                                <span class="badge bg-light text-dark">{{ app.application_status }}</span>
                                 {% endif %}
                             </td>
-                            
+
                             <td class="text-end pt-2 pb-2">
-                                <a href="{{ url_for('student_drive_details', drive_id=app.drive_id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-4">view details</a>
+                                <a href="{{ url_for('student_drive_details', drive_id=app.drive_id) }}"
+                                    class="btn btn-sm btn-outline-primary rounded-pill px-4">view details</a>
                             </td>
                         </tr>
                         {% else %}
@@ -74,7 +109,7 @@
                     </tbody>
                 </table>
             </div>
-            
+
         </div>
 
     </div>

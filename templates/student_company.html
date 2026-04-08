@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-lg-10 p-0 bg-white" style="border: 2px solid #333;"> 
+
+        <div class="d-flex justify-content-between align-items-center p-3 bg-light" style="border-bottom: 2px solid #333;">
+            <h5 class="mb-0">Company Profile</h5>
+            <a href="{{ url_for('student_dashboard') }}" class="text-decoration-none text-dark fw-bold small">&larr; Back to Dashboard</a>
+        </div>
+
+        <div class="p-4">
+
+            <div class="mb-5">
+                <h5 class="mb-2 text-secondary">Company Details</h5>
+                <div style="border: 2px solid #333;">
+                    <table class="table table-borderless mb-0">
+                        <tbody>
+                            <tr style="border-bottom: 1px solid #ccc;">
+                                <th class="ps-3 pt-3 pb-3 bg-light" style="width: 220px;">Company Name</th>
+                                <td class="pt-3 pb-3">{{ company.company_name }}</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #ccc;">
+                                <th class="ps-3 pt-3 pb-3 bg-light">About</th>
+                                <td class="pt-3 pb-3">{{ company.company_desc }}</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #ccc;">
+                                <th class="ps-3 pt-3 pb-3 bg-light">HR Contact</th>
+                                <td class="pt-3 pb-3">{{ company.hr_name }} ({{ company.hr_email }})</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #ccc;">
+                                <th class="ps-3 pt-3 pb-3 bg-light">HR Phone</th>
+                                <td class="pt-3 pb-3">{{ company.hr_phone }}</td>
+                            </tr>
+                            <tr>
+                                <th class="ps-3 pt-3 pb-3 bg-light">Website</th>
+                                <td class="pt-3 pb-3">
+                                    <a href="{{ company.website }}" target="_blank" rel="noopener noreferrer">{{ company.website }}</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <h5 class="mb-2 text-secondary">Active Job Postings by {{ company.company_name }}</h5>
+                
+                <div style="border: 2px solid #333;">
+                    <table class="table table-borderless mb-0">
+                        <thead class="bg-light" style="border-bottom: 2px solid #333;">
+                            <tr>
+                                <th class="fw-normal pb-2 pt-2">Job Title</th>
+                                <th class="fw-normal pb-2 pt-2">Location</th>
+                                <th class="fw-normal pb-2 pt-2">Deadline</th>
+                                <th class="fw-normal pb-2 pt-2 text-end pe-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for drive in active_drives %}
+                            <tr style="border-bottom: 1px solid #ccc;">
+                                <td class="pt-3 ps-3 fw-bold text-dark">{{ drive.job_title }}</td>
+                                <td class="pt-3">{{ drive.location or 'Not Specified' }}</td> 
+                                <td class="pt-3">{{ drive.deadline.strftime('%d/%m/%Y') if drive.deadline else 'N/A' }}</td>
+                                <td class="text-end pt-2 pb-2 pe-3">
+                                    <a href="{{ url_for('student_drive_details', drive_id=drive.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-4">View & Apply</a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted pt-4 pb-4">
+                                    This company currently has no active job postings.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

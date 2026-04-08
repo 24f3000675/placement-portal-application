@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-lg-11 p-0 bg-white" style="border: 2px solid #333;">
+
+        <div class="d-flex justify-content-between align-items-center p-3 bg-light"
+            style="border-bottom: 2px solid #333;">
+            <h5 class="mb-0">Student Applications</h5>
+            <div class="small">
+                <a href="{{ url_for('admin_dashboard') }}" class="text-decoration-none text-dark fw-bold">&larr; Back to
+                    Dashboard</a>
+            </div>
+        </div>
+
+        <div class="p-4">
+
+            <div style="border: 2px solid #333; max-height: 600px; overflow-y: auto;">
+                <table class="table table-borderless table-hover mb-0" style="position: relative;">
+                    <thead class="bg-light"
+                        style="border-bottom: 2px solid #333; position: sticky; top: 0; z-index: 1;">
+                        <tr>
+                            <th class="fw-bold pb-2 pt-2">Student :</th>
+                            <th class="fw-bold pb-2 pt-2">Roll No :</th>
+                            <th class="fw-bold pb-2 pt-2">Company :</th>
+                            <th class="fw-bold pb-2 pt-2">Job Title :</th>
+                            <th class="fw-bold pb-2 pt-2">Status :</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app, student, drive, company in results %}
+                        <tr style="border-bottom: 1px solid #ccc;" class="align-middle">
+                            <td class="pt-3 ps-3 text-dark">{{ student.name }}</td>
+                            <td class="pt-3">{{ student.roll_no }}</td>
+                            <td class="pt-3">{{ company.company_name }}</td>
+                            <td class="pt-3">{{ drive.job_title }}</td>
+                            <td class="pt-3 pe-3 text-end">
+                                {% if app.application_status == 'applied' %}
+                                <span class="badge bg-secondary">Pending</span>
+                                {% elif app.application_status == 'shortlisted' %}
+                                <span class="badge bg-info text-dark">Shortlisted</span>
+                                {% elif app.application_status == 'selected' %}
+                                <span class="badge bg-success">Selected</span>
+                                {% elif app.application_status == 'rejected' %}
+                                <span class="badge bg-danger">Rejected</span>
+                                {% else %}
+                                <span class="badge bg-dark">{{ app.application_status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted pt-4 pb-4">
+                                No applications have been submitted yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

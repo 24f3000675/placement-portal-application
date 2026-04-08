@@ -20,6 +20,11 @@
                 <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary">Clear</a>
                 {% endif %}
             </form>
+            {% if search_query %}
+            <div class="alert alert-info mt-3 mb-3" role="status">
+                Search Results for "{{ search_query }}": {{ search_results_count }} match{{ '' if search_results_count == 1 else 'es' }} found.
+            </div>
+            {% endif %}
             <h5 class="mb-3">Available Job Postings</h5>
             <div class="border border-dark p-3 mb-5">
                 <table class="table table-borderless table-hover mb-0">

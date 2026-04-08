@@ -225,6 +225,7 @@ def admin_dashboard():
     pending_students = Student.query.filter_by(approval_status='pending').all()
     pending_companies = Company.query.filter_by(approval_status='pending').all()
     pending_drives = PlacementDrive.query.filter_by(status='Pending').all()
+    applications = Application.query.order_by(Application.applied_on.desc()).limit(10).all()
 
     return render_template(
         'admin_dashboard.html',
@@ -232,6 +233,7 @@ def admin_dashboard():
         companies=companies,
         students=students,
         drives=drives,
+        applications=applications,
         pending_students=pending_students,
         pending_companies=pending_companies,
         pending_drives=pending_drives,
@@ -389,8 +391,10 @@ def student_dashboard():
         search_term = f"%{search_query}%"
         query = query.filter(
             db.or_(
+                PlacementDrive.name.ilike(search_term),
                 PlacementDrive.job_title.ilike(search_term),
-                Company.company_name.ilike(search_term) 
+                PlacementDrive.job_desc.ilike(search_term),
+                Company.company_name.ilike(search_term)
             )
         )
 
@@ -401,6 +405,7 @@ def student_dashboard():
         companies=companies,
         applications=applications,
         available_drives=available_drives,
+        search_results_count=len(available_drives),
         search_query=search_query
     )
 
@@ -457,7 +462,7 @@ def student_company(company_id):
     return render_template('student_company.html', company=company, active_drives=active_drives)
 
 
-@app.route('/student/drive/<int:drive_id>', methods=['GET', 'POST']) #View drive details
+@app.route('/student/drive/<int:drive_id>', methods=['GET', 'POST']) #View drive details and apply for the job
 @login_required
 def student_drive_details(drive_id):
     if not current_user.is_authenticated or not current_user.get_id().startswith('student_'):
@@ -478,12 +483,15 @@ def student_drive_details(drive_id):
     if drive.deadline:
         is_drive_open = is_drive_open and drive.deadline >= datetime.now()
 
-    if request.method == 'POST':
+    if request.method == 'POST': #Job Application
         if existing_application:
             flash('You have already applied for this drive', 'warning')
         elif not is_drive_open:
             flash('This drive is no longer accepting applications.', 'danger')
         else:
+            if drive.status != 'approved':
+                flash('The placement drive is not approved by admin, you cannot apply yet', 'warning')
+                return redirect(url_for('student_dashboard'))
             new_application = Application(student_roll=current_user.roll_no, drive_id=drive_id, application_status='applied')
             db.session.add(new_application)
             db.session.commit()
@@ -500,7 +508,15 @@ def admin_applications():
         return "Unauthorized Access : Not an Admin ", 403
     
     applications = Application.query.all()
-    return render_template('admin_applications.html', applications=applications)
+
+    results = db.session.query(Application, Student, PlacementDrive, Company)\
+        .join(Student, Application.student_roll == Student.roll_no)\
+        .join(PlacementDrive, Application.drive_id == PlacementDrive.id)\
+        .join(Company, PlacementDrive.comp_id == Company.company_id)\
+        .order_by(Application.id.desc())\
+        .all()
+
+    return render_template('admin_applications.html', applications=applications, results=results)
 
 
 #Company Dashboard
@@ -561,6 +577,10 @@ def company_create_drive():
         return "Unauthorized Access : Not a Company ", 403
     
     company = Company.query.filter_by(company_id=current_user.company_id).first()
+
+    if company.approval_status != 'approved':
+        flash('Company not approved yet', 'warning')
+        return redirect(url_for('company_dashboard'))
 
     if request.method == 'POST':
         name = request.form.get('name')
@@ -676,8 +696,7 @@ def company_application_action(app_id, action):
 
 @app.route('/')
 def home():
-    return render_template('index.html')
-
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)

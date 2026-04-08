@@ -449,10 +449,11 @@
                     {% for app in applications %}
                     <tr>
                         <td>{{ loop.index }}</td>
-                        <td>{{ app.student_id }}</td> <td>{{ app.drive_id }}</td>
-                        <td>{{ app.date_applied.strftime('%d/%m/%Y') if app.date_applied else 'N/A' }}</td>
+                        <td>{{ app.student.name }} ({{ app.student_roll }})</td>
+                        <td>{{ app.drive.name }}</td>
+                        <td>{{ app.applied_on.strftime('%d/%m/%Y') if app.applied_on else 'N/A' }}</td>
                         <td class="text-end">
-                            <a href="#" class="btn btn-sm btn-outline-primary">View</a>
+                            <a href="{{ url_for('admin_applications') }}" class="btn btn-sm btn-outline-primary">View</a>
                         </td>
                     </tr>
                     {% else %}

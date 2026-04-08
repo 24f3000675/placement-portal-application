@@ -36,25 +36,12 @@
                         <ul class="list-group">
                             {% for company in companies %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <button
-                                    type="button"
-                                    class="btn btn-link p-0 text-start detail-trigger"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#entityDetailsModal"
-                                    data-entity="company"
-                                    data-company-id="{{ company.company_id }}"
-                                    data-company-name="{{ company.company_name }}"
-                                    data-email="{{ company.email }}"
-                                    data-website="{{ company.website }}"
-                                    data-hr-name="{{ company.hr_name }}"
-                                    data-hr-email="{{ company.hr_email }}"
-                                    data-hr-phone="{{ company.hr_phone }}"
-                                    data-status="{{ company.approval_status }}"
-                                    data-blacklisted="{{ 'Yes' if company.is_blacklisted else 'No' }}"
-                                    data-description="{{ company.company_desc }}"
-                                >
-                                    {{ company.company_name }}
-                                </button>
+                                <details class="w-100">
+                                    <summary class="fw-semibold">{{ company.company_name }}</summary>
+                                    <div class="small text-muted mt-1">
+                                        {{ company.email }} | {{ company.website }} | {{ company.hr_name }}
+                                    </div>
+                                </details>
                                 <span class="badge text-bg-secondary">{{ company.approval_status }}</span>
                             </li>
                             {% else %}
@@ -70,28 +57,12 @@
                         <ul class="list-group">
                             {% for student in students %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <button
-                                    type="button"
-                                    class="btn btn-link p-0 text-start detail-trigger"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#entityDetailsModal"
-                                    data-entity="student"
-                                    data-name="{{ student.name }}"
-                                    data-roll-no="{{ student.roll_no }}"
-                                    data-email="{{ student.email }}"
-                                    data-phone="{{ student.phone_no }}"
-                                    data-gender="{{ student.gender }}"
-                                    data-dob="{{ student.dob }}"
-                                    data-location="{{ student.location }}"
-                                    data-dept="{{ student.dept_id }}"
-                                    data-grad-year="{{ student.graduation_year }}"
-                                    data-cgpa="{{ student.cgpa }}"
-                                    data-backlogs="{{ 'Yes' if student.has_backlogs else 'No' }}"
-                                    data-status="{{ student.approval_status }}"
-                                    data-blacklisted="{{ 'Yes' if student.is_blacklisted else 'No' }}"
-                                >
-                                    {{ student.name }} ({{ student.roll_no }})
-                                </button>
+                                <details class="w-100">
+                                    <summary class="fw-semibold">{{ student.name }} ({{ student.roll_no }})</summary>
+                                    <div class="small text-muted mt-1">
+                                        {{ student.email }} | {{ student.phone_no }} | Dept: {{ student.dept_id }} | CGPA: {{ student.cgpa }}
+                                    </div>
+                                </details>
                                 <span class="badge text-bg-secondary">{{ student.approval_status }}</span>
                             </li>
                             {% else %}
@@ -107,27 +78,12 @@
                         <ul class="list-group">
                             {% for drive in drives %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <button
-                                    type="button"
-                                    class="btn btn-link p-0 text-start detail-trigger"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#entityDetailsModal"
-                                    data-entity="drive"
-                                    data-drive-id="{{ drive.id }}"
-                                    data-drive-name="{{ drive.name }}"
-                                    data-job-title="{{ drive.job_title }}"
-                                    data-company-id="{{ drive.comp_id }}"
-                                    data-job-desc="{{ drive.job_desc }}"
-                                    data-min-cgpa="{{ drive.min_cgpa }}"
-                                    data-grad-year="{{ drive.eligible_grad_yr }}"
-                                    data-salary="{{ drive.salary }}"
-                                    data-location="{{ drive.location }}"
-                                    data-deadline="{{ drive.deadline }}"
-                                    data-status="{{ drive.status }}"
-                                    data-remarks="{{ drive.remarks }}"
-                                >
-                                    {{ drive.name }}
-                                </button>
+                                <details class="w-100">
+                                    <summary class="fw-semibold">{{ drive.name }}</summary>
+                                    <div class="small text-muted mt-1">
+                                        {{ drive.job_title }} | {{ drive.location or 'N/A' }} | Deadline: {{ drive.deadline.strftime('%d/%m/%Y') if drive.deadline else 'N/A' }}
+                                    </div>
+                                </details>
                                 <span class="badge text-bg-secondary">{{ drive.status }}</span>
                             </li>
                             {% else %}
@@ -197,25 +153,12 @@
             <ul class="list-group list-group-flush">
                 {% for company in companies if company.approval_status == 'approved' %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <button
-                        type="button"
-                        class="btn btn-link p-0 text-start detail-trigger"
-                        data-bs-toggle="modal"
-                        data-bs-target="#entityDetailsModal"
-                        data-entity="company"
-                        data-company-id="{{ company.company_id }}"
-                        data-company-name="{{ company.company_name }}"
-                        data-email="{{ company.email }}"
-                        data-website="{{ company.website }}"
-                        data-hr-name="{{ company.hr_name }}"
-                        data-hr-email="{{ company.hr_email }}"
-                        data-hr-phone="{{ company.hr_phone }}"
-                        data-status="{{ company.approval_status }}"
-                        data-blacklisted="{{ 'Yes' if company.is_blacklisted else 'No' }}"
-                        data-description="{{ company.company_desc }}"
-                    >
-                        {{ company.company_name }}
-                    </button>
+                    <details class="w-100">
+                        <summary class="fw-semibold">{{ company.company_name }}</summary>
+                        <div class="small text-muted mt-1">
+                            {{ company.email }} | {{ company.website }} | HR: {{ company.hr_name }} ({{ company.hr_email }})
+                        </div>
+                    </details>
                     <a href="{{ url_for('admin_company_action', company_id=company.company_id, action='blacklist') }}" class="btn btn-sm btn-outline-danger">Blacklist</a>
                 </li>
                 {% else %}
@@ -229,28 +172,12 @@
             <ul class="list-group list-group-flush">
                 {% for student in students if student.approval_status == 'approved' %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <button
-                        type="button"
-                        class="btn btn-link p-0 text-start detail-trigger"
-                        data-bs-toggle="modal"
-                        data-bs-target="#entityDetailsModal"
-                        data-entity="student"
-                        data-name="{{ student.name }}"
-                        data-roll-no="{{ student.roll_no }}"
-                        data-email="{{ student.email }}"
-                        data-phone="{{ student.phone_no }}"
-                        data-gender="{{ student.gender }}"
-                        data-dob="{{ student.dob }}"
-                        data-location="{{ student.location }}"
-                        data-dept="{{ student.dept_id }}"
-                        data-grad-year="{{ student.graduation_year }}"
-                        data-cgpa="{{ student.cgpa }}"
-                        data-backlogs="{{ 'Yes' if student.has_backlogs else 'No' }}"
-                        data-status="{{ student.approval_status }}"
-                        data-blacklisted="{{ 'Yes' if student.is_blacklisted else 'No' }}"
-                    >
-                        {{ student.name }} ({{ student.roll_no }})
-                    </button>
+                    <details class="w-100">
+                        <summary class="fw-semibold">{{ student.name }} ({{ student.roll_no }})</summary>
+                        <div class="small text-muted mt-1">
+                            {{ student.email }} | {{ student.phone_no }} | Dept: {{ student.dept_id }} | CGPA: {{ student.cgpa }}
+                        </div>
+                    </details>
                     <a href="{{ url_for('admin_student_action', roll_no=student.roll_no, action='blacklist') }}" class="btn btn-sm btn-outline-danger">Blacklist</a>
                 </li>
                 {% else %}
@@ -264,25 +191,12 @@
             <ul class="list-group list-group-flush">
                 {% for company in pending_companies %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <button
-                        type="button"
-                        class="btn btn-link p-0 text-start detail-trigger"
-                        data-bs-toggle="modal"
-                        data-bs-target="#entityDetailsModal"
-                        data-entity="company"
-                        data-company-id="{{ company.company_id }}"
-                        data-company-name="{{ company.company_name }}"
-                        data-email="{{ company.email }}"
-                        data-website="{{ company.website }}"
-                        data-hr-name="{{ company.hr_name }}"
-                        data-hr-email="{{ company.hr_email }}"
-                        data-hr-phone="{{ company.hr_phone }}"
-                        data-status="{{ company.approval_status }}"
-                        data-blacklisted="{{ 'Yes' if company.is_blacklisted else 'No' }}"
-                        data-description="{{ company.company_desc }}"
-                    >
-                        {{ company.company_name }} ({{ company.email }})
-                    </button>
+                    <details class="w-100">
+                        <summary class="fw-semibold">{{ company.company_name }} ({{ company.email }})</summary>
+                        <div class="small text-muted mt-1">
+                            {{ company.website }} | HR: {{ company.hr_name }} ({{ company.hr_email }})
+                        </div>
+                    </details>
                     <div class="btn-group" role="group">
                         <a href="{{ url_for('admin_company_action', company_id=company.company_id, action='approve') }}" class="btn btn-sm btn-outline-success">Approve</a>
                         <a href="{{ url_for('admin_company_action', company_id=company.company_id, action='reject') }}" class="btn btn-sm btn-outline-danger">Reject</a>
@@ -300,28 +214,12 @@
                 {% for student in pending_students %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
-                        <button
-                            type="button"
-                            class="btn btn-link p-0 text-start fw-semibold detail-trigger"
-                            data-bs-toggle="modal"
-                            data-bs-target="#entityDetailsModal"
-                            data-entity="student"
-                            data-name="{{ student.name }}"
-                            data-roll-no="{{ student.roll_no }}"
-                            data-email="{{ student.email }}"
-                            data-phone="{{ student.phone_no }}"
-                            data-gender="{{ student.gender }}"
-                            data-dob="{{ student.dob }}"
-                            data-location="{{ student.location }}"
-                            data-dept="{{ student.dept_id }}"
-                            data-grad-year="{{ student.graduation_year }}"
-                            data-cgpa="{{ student.cgpa }}"
-                            data-backlogs="{{ 'Yes' if student.has_backlogs else 'No' }}"
-                            data-status="{{ student.approval_status }}"
-                            data-blacklisted="{{ 'Yes' if student.is_blacklisted else 'No' }}"
-                        >
-                            {{ student.name }} ({{ student.roll_no }})
-                        </button><br>
+                        <details class="w-100">
+                            <summary class="fw-semibold">{{ student.name }} ({{ student.roll_no }})</summary>
+                            <div class="small text-muted mt-1">
+                                {{ student.email }} | {{ student.phone_no }} | Dept: {{ student.dept_id }} | CGPA: {{ student.cgpa }}
+                            </div>
+                        </details>
                     </div>
                     <div>
                         <a href="{{ url_for('admin_student_action', roll_no=student.roll_no, action='approve') }}" class="btn btn-sm btn-outline-success">Approve</a>
@@ -349,27 +247,12 @@
                     <tr>
                         <td>{{ loop.index }}</td>
                         <td>
-                            <button
-                                type="button"
-                                class="btn btn-link p-0 text-start detail-trigger"
-                                data-bs-toggle="modal"
-                                data-bs-target="#entityDetailsModal"
-                                data-entity="drive"
-                                data-drive-id="{{ drive.id }}"
-                                data-drive-name="{{ drive.name }}"
-                                data-job-title="{{ drive.job_title }}"
-                                data-company-id="{{ drive.comp_id }}"
-                                data-job-desc="{{ drive.job_desc }}"
-                                data-min-cgpa="{{ drive.min_cgpa }}"
-                                data-grad-year="{{ drive.eligible_grad_yr }}"
-                                data-salary="{{ drive.salary }}"
-                                data-location="{{ drive.location }}"
-                                data-deadline="{{ drive.deadline }}"
-                                data-status="{{ drive.status }}"
-                                data-remarks="{{ drive.remarks }}"
-                            >
-                                {{ drive.name }}
-                            </button>
+                            <details>
+                                <summary class="fw-semibold">{{ drive.name }}</summary>
+                                <div class="small text-muted mt-1">
+                                    {{ drive.job_title }} | {{ drive.location or 'N/A' }} | Deadline: {{ drive.deadline.strftime('%d/%m/%Y') if drive.deadline else 'N/A' }}
+                                </div>
+                            </details>
                         </td>
                         <td class="text-end">
                             <a href="{{ url_for('admin_drive_action', drive_id=drive.id, action='reject') }}" class="btn btn-sm btn-outline-danger">Reject</a>
@@ -397,27 +280,12 @@
                     <tr>
                         <td>{{ loop.index }}</td>
                         <td>
-                            <button
-                                type="button"
-                                class="btn btn-link p-0 text-start detail-trigger"
-                                data-bs-toggle="modal"
-                                data-bs-target="#entityDetailsModal"
-                                data-entity="drive"
-                                data-drive-id="{{ drive.id }}"
-                                data-drive-name="{{ drive.name }}"
-                                data-job-title="{{ drive.job_title }}"
-                                data-company-id="{{ drive.comp_id }}"
-                                data-job-desc="{{ drive.job_desc }}"
-                                data-min-cgpa="{{ drive.min_cgpa }}"
-                                data-grad-year="{{ drive.eligible_grad_yr }}"
-                                data-salary="{{ drive.salary }}"
-                                data-location="{{ drive.location }}"
-                                data-deadline="{{ drive.deadline }}"
-                                data-status="{{ drive.status }}"
-                                data-remarks="{{ drive.remarks }}"
-                            >
-                                {{ drive.name }}
-                            </button>
+                            <details>
+                                <summary class="fw-semibold">{{ drive.name }}</summary>
+                                <div class="small text-muted mt-1">
+                                    {{ drive.job_title }} | {{ drive.location or 'N/A' }} | Deadline: {{ drive.deadline.strftime('%d/%m/%Y') if drive.deadline else 'N/A' }}
+                                </div>
+                            </details>
                         </td>
                         <td class="text-end">
                             <div class="btn-group" role="group">
@@ -465,93 +333,4 @@
 
     </div>
 </div>
-
-<div class="modal fade" id="entityDetailsModal" tabindex="-1" aria-labelledby="entityDetailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="entityDetailsModalLabel">Details</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="card border-0">
-                    <div class="card-body p-0" id="entityDetailsBody"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const detailButtons = document.querySelectorAll('.detail-trigger');
-    const titleNode = document.getElementById('entityDetailsModalLabel');
-    const bodyNode = document.getElementById('entityDetailsBody');
-
-    const renderRows = (rows) => rows.map((row) => {
-        const value = row.value !== undefined && row.value !== null && row.value !== '' ? row.value : '-';
-        return `<tr><th class="w-25">${row.label}</th><td>${value}</td></tr>`;
-    }).join('');
-
-    detailButtons.forEach((btn) => {
-        btn.addEventListener('click', function () {
-            const d = this.dataset;
-            let title = 'Details';
-            let rows = [];
-
-            if (d.entity === 'company') {
-                title = `Company: ${d.companyName || ''}`;
-                rows = [
-                    { label: 'Company ID', value: d.companyId },
-                    { label: 'Company Name', value: d.companyName },
-                    { label: 'Email', value: d.email },
-                    { label: 'Website', value: d.website },
-                    { label: 'HR Name', value: d.hrName },
-                    { label: 'HR Email', value: d.hrEmail },
-                    { label: 'HR Phone', value: d.hrPhone },
-                    { label: 'Status', value: d.status },
-                    { label: 'Blacklisted', value: d.blacklisted },
-                    { label: 'Description', value: d.description }
-                ];
-            } else if (d.entity === 'student') {
-                title = `Student: ${d.name || ''}`;
-                rows = [
-                    { label: 'Roll No', value: d.rollNo },
-                    { label: 'Name', value: d.name },
-                    { label: 'Email', value: d.email },
-                    { label: 'Phone', value: d.phone },
-                    { label: 'Gender', value: d.gender },
-                    { label: 'Date of Birth', value: d.dob },
-                    { label: 'Location', value: d.location },
-                    { label: 'Department', value: d.dept },
-                    { label: 'Graduation Year', value: d.gradYear },
-                    { label: 'CGPA', value: d.cgpa },
-                    { label: 'Has Backlogs', value: d.backlogs },
-                    { label: 'Status', value: d.status },
-                    { label: 'Blacklisted', value: d.blacklisted }
-                ];
-            } else if (d.entity === 'drive') {
-                title = `Drive: ${d.driveName || ''}`;
-                rows = [
-                    { label: 'Drive ID', value: d.driveId },
-                    { label: 'Drive Name', value: d.driveName },
-                    { label: 'Job Title', value: d.jobTitle },
-                    { label: 'Company ID', value: d.companyId },
-                    { label: 'Job Description', value: d.jobDesc },
-                    { label: 'Min CGPA', value: d.minCgpa },
-                    { label: 'Eligible Grad Year', value: d.gradYear },
-                    { label: 'Salary', value: d.salary },
-                    { label: 'Location', value: d.location },
-                    { label: 'Deadline', value: d.deadline },
-                    { label: 'Status', value: d.status },
-                    { label: 'Remarks', value: d.remarks }
-                ];
-            }
-
-            titleNode.textContent = title;
-            bodyNode.innerHTML = `<table class="table table-bordered mb-0">${renderRows(rows)}</table>`;
-        });
-    });
-});
-</script>
 {% endblock %}

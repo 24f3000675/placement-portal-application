@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-lg-8 border border-dark p-0 bg-white">
+
+        <div class="d-flex justify-content-between align-items-center p-3 border-bottom border-dark bg-light">
+            <h5 class="mb-0">Edit Drive</h5>
+            <a href="{{ url_for('company_dashboard') }}" class="text-decoration-none text-dark">&larr; Back to Dashboard</a>
+        </div>
+
+        <div class="p-4">
+            <form method="POST" action="{{ url_for('company_drive_update', drive_id=drive.id) }}">
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Drive Name :</label>
+                        <input type="text" name="name" class="form-control border-dark" value="{{ drive.name }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Job Title :</label>
+                        <input type="text" name="job_title" class="form-control border-dark" value="{{ drive.job_title }}" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Job Description :</label>
+                    <textarea name="job_desc" class="form-control border-dark" rows="5" required>{{ drive.job_desc }}</textarea>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Salary (in INR) :</label>
+                        <input type="number" name="salary" class="form-control border-dark" value="{{ drive.salary if drive.salary is not none else '' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Location :</label>
+                        <input type="text" name="location" class="form-control border-dark" value="{{ drive.location if drive.location else '' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Application Deadline :</label>
+                        <input type="date" name="deadline" class="form-control border-dark" value="{{ drive.deadline.strftime('%Y-%m-%d') if drive.deadline else '' }}" required>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Minimum CGPA :</label>
+                        <input type="number" step="0.01" name="min_cgpa" class="form-control border-dark" value="{{ drive.min_cgpa if drive.min_cgpa is not none else '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Eligible Graduation Year :</label>
+                        <input type="number" name="eligible_grad_yr" class="form-control border-dark" value="{{ drive.eligible_grad_yr if drive.eligible_grad_yr else '' }}">
+                    </div>
+                </div>
+
+                <hr class="my-4 border-dark">
+
+                <h6 class="fw-bold mb-3">Eligible Departments</h6>
+                <div class="mb-4">
+                    {% for dept in departments %}
+                    <div class="form-check form-check-inline">
+                        <input
+                            class="form-check-input border-dark"
+                            type="checkbox"
+                            name="departments"
+                            value="{{ dept.dept_id }}"
+                            id="dept_{{ dept.dept_id }}"
+                            {% if dept.dept_id in selected_department_ids %}checked{% endif %}
+                        >
+                        <label class="form-check-label" for="dept_{{ dept.dept_id }}">{{ dept.dept_name }}</label>
+                    </div>
+                    {% else %}
+                        <p class="text-danger small fw-bold">No departments found in the database.</p>
+                    {% endfor %}
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary py-2 fw-bold">Save Changes</button>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

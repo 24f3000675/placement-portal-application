@@ -33,6 +33,7 @@
                             <th class="fw-bold pb-2">Company</th>
                             <th class="fw-bold pb-2">Job Title</th>
                             <th class="fw-bold pb-2">Deadline</th>
+                            <th class="fw-bold pb-2">Last Updated</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -47,6 +48,7 @@
                             </td>
                             <td class="pt-3">{{ drive.job_title }}</td>
                             <td class="pt-3">{{ drive.deadline.strftime('%d/%m/%Y') }}</td>
+                            <td class="pt-3">{{ drive.updated_at.strftime('%d/%m/%Y %I:%M %p') if drive.updated_at else 'N/A' }}</td>
                             <td class="text-end pt-2 pb-2">
                                 <a href="{{ url_for('student_drive_details', drive_id=drive.id) }}"
                                     class="btn btn-sm btn-outline-primary rounded-pill px-4">View & Apply</a>
@@ -54,7 +56,7 @@
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="4" class="text-center text-muted pt-4 pb-2">
+                            <td colspan="5" class="text-center text-muted pt-4 pb-2">
                                 {% if search_query %} No jobs match "{{ search_query }}". {% else %} No active job
                                 postings right now. {% endif %}
                             </td>

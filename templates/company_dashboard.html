@@ -10,9 +10,60 @@
 
         <div class="p-4">
             
+            <div class="row g-3 mb-5">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <small class="text-muted">Total Jobs Posted</small>
+                            <h4 class="mb-0">{{ stats.total_jobs }}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <small class="text-muted">Total Applications</small>
+                            <h4 class="mb-0">{{ stats.total_applications }}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <small class="text-muted">Applied/Pending</small>
+                            <h4 class="mb-0">{{ stats.applied }}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <small class="text-muted">Shortlisted</small>
+                            <h4 class="mb-0">{{ stats.shortlisted }}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <small class="text-muted">Selected</small>
+                            <h4 class="mb-0">{{ stats.selected }}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <small class="text-muted">Rejected</small>
+                            <h4 class="mb-0">{{ stats.rejected }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="mb-5">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h5 class="mb-0 text-secondary">Upcoming Drives :</h5>
+                    <h5 class="mb-0 text-secondary">Ongoing Drives :</h5>
                     <a href="{{ url_for('company_create_drive') }}" class="btn btn-sm btn-outline-success px-3">Create Drive</a>
                 </div>
                 
@@ -37,6 +88,7 @@
                                 </td> 
                                 <td class="text-end pt-2 pb-2 pe-3" style="white-space: nowrap;">
                                     <a href="{{ url_for('company_drive_action', action='fetch_applications', drive_id=drive.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-2">View</a>
+                                    <a href="{{ url_for('company_edit_drive', drive_id=drive.id) }}" class="btn btn-sm btn-outline-secondary rounded-pill px-2 ms-1">Edit</a>
                                     <a href="{{ url_for('company_drive_action', action='close', drive_id=drive.id) }}" class="btn btn-sm btn-outline-danger rounded-pill px-2 ms-1">Close</a>
                                 </td>
                             </tr>

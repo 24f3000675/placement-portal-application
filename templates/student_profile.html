@@ -17,14 +17,15 @@
                 <form method="POST" action="{{ url_for('student_profile') }}"> 
                     
                     <div class="mb-4">
-                        <label class="form-label fw-bold">Primary Skills</label>
-                        <textarea name="skills" class="form-control" rows="3" placeholder="Enter your skills seperated by comma">{{ profile.skills if profile else '' }}</textarea>
+                        <label class="form-label fw-bold">Primary Skills <span class="text-danger">*</span></label>
+                        <textarea name="skills" class="form-control" rows="3" placeholder="Enter your skills seperated by comma" required>{{ profile.skills if profile else '' }}</textarea>
+                        <div class="form-text text-muted">Required for applying to drives.</div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label fw-bold">Resume URL : </label>
-                        <input type="url" name="resume_link" class="form-control" placeholder="https://drive.google.com/..." value="{{ profile.resume_link if profile else '' }}">
-                        <div class="form-text text-muted">Paste a link to your Google Drive resume (Make sure the link sharing is set to "Anyone with the link").</div>
+                        <label class="form-label fw-bold">Resume URL <span class="text-danger">*</span></label>
+                        <input type="url" name="resume_link" class="form-control" placeholder="https://drive.google.com/..." value="{{ profile.resume_link if profile else '' }}" required>
+                        <div class="form-text text-muted">Required for applying to drives. Paste a link to your Google Drive resume (Make sure the link sharing is set to "Anyone with the link").</div>
                     </div>
 
                     <div class="row mb-4">

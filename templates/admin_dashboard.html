@@ -36,13 +36,14 @@
                         <ul class="list-group">
                             {% for company in companies %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <details class="w-100">
-                                    <summary class="fw-semibold">{{ company.company_name }}</summary>
-                                    <div class="small text-muted mt-1">
-                                        {{ company.email }} | {{ company.website }} | {{ company.hr_name }}
-                                    </div>
-                                </details>
-                                <span class="badge text-bg-secondary">{{ company.approval_status }}</span>
+                                <div>
+                                    <div class="fw-semibold">{{ company.company_name }}</div>
+                                    <div class="small text-muted">{{ company.email }}</div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('admin_company_profile', company_id=company.company_id) }}" class="btn btn-sm btn-outline-primary">View Profile</a>
+                                    <span class="badge text-bg-secondary align-self-center">{{ company.approval_status }}</span>
+                                </div>
                             </li>
                             {% else %}
                             <li class="list-group-item text-muted">No company matches found.</li>
@@ -57,13 +58,14 @@
                         <ul class="list-group">
                             {% for student in students %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <details class="w-100">
-                                    <summary class="fw-semibold">{{ student.name }} ({{ student.roll_no }})</summary>
-                                    <div class="small text-muted mt-1">
-                                        {{ student.email }} | {{ student.phone_no }} | Dept: {{ student.dept_id }} | CGPA: {{ student.cgpa }}
-                                    </div>
-                                </details>
-                                <span class="badge text-bg-secondary">{{ student.approval_status }}</span>
+                                <div>
+                                    <div class="fw-semibold">{{ student.name }} ({{ student.roll_no }})</div>
+                                    <div class="small text-muted">{{ student.email }}</div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('admin_student_profile', roll_no=student.roll_no) }}" class="btn btn-sm btn-outline-primary">View Profile</a>
+                                    <span class="badge text-bg-secondary align-self-center">{{ student.approval_status }}</span>
+                                </div>
                             </li>
                             {% else %}
                             <li class="list-group-item text-muted">No student matches found.</li>
@@ -78,13 +80,14 @@
                         <ul class="list-group">
                             {% for drive in drives %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <details class="w-100">
-                                    <summary class="fw-semibold">{{ drive.name }}</summary>
-                                    <div class="small text-muted mt-1">
-                                        {{ drive.job_title }} | {{ drive.location or 'N/A' }} | Deadline: {{ drive.deadline.strftime('%d/%m/%Y') if drive.deadline else 'N/A' }}
-                                    </div>
-                                </details>
-                                <span class="badge text-bg-secondary">{{ drive.status }}</span>
+                                <div>
+                                    <div class="fw-semibold">{{ drive.name }}</div>
+                                    <div class="small text-muted">{{ drive.job_title }}</div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('admin_drive_details', drive_id=drive.id) }}" class="btn btn-sm btn-outline-primary">View Drive Details</a>
+                                    <span class="badge text-bg-secondary align-self-center">{{ drive.status }}</span>
+                                </div>
                             </li>
                             {% else %}
                             <li class="list-group-item text-muted">No drive matches found.</li>
@@ -153,13 +156,14 @@
             <ul class="list-group list-group-flush">
                 {% for company in companies if company.approval_status == 'approved' %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <details class="w-100">
-                        <summary class="fw-semibold">{{ company.company_name }}</summary>
-                        <div class="small text-muted mt-1">
-                            {{ company.email }} | {{ company.website }} | HR: {{ company.hr_name }} ({{ company.hr_email }})
-                        </div>
-                    </details>
-                    <a href="{{ url_for('admin_company_action', company_id=company.company_id, action='blacklist') }}" class="btn btn-sm btn-outline-danger">Blacklist</a>
+                    <div>
+                        <div class="fw-semibold">{{ company.company_name }}</div>
+                        <div class="small text-muted">{{ company.email }}</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('admin_company_profile', company_id=company.company_id) }}" class="btn btn-sm btn-outline-primary">View Profile</a>
+                        <a href="{{ url_for('admin_company_action', company_id=company.company_id, action='blacklist') }}" class="btn btn-sm btn-outline-danger">Blacklist</a>
+                    </div>
                 </li>
                 {% else %}
                 <li class="list-group-item text-muted">No registered companies found.</li>
@@ -172,13 +176,14 @@
             <ul class="list-group list-group-flush">
                 {% for student in students if student.approval_status == 'approved' %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <details class="w-100">
-                        <summary class="fw-semibold">{{ student.name }} ({{ student.roll_no }})</summary>
-                        <div class="small text-muted mt-1">
-                            {{ student.email }} | {{ student.phone_no }} | Dept: {{ student.dept_id }} | CGPA: {{ student.cgpa }}
-                        </div>
-                    </details>
-                    <a href="{{ url_for('admin_student_action', roll_no=student.roll_no, action='blacklist') }}" class="btn btn-sm btn-outline-danger">Blacklist</a>
+                    <div>
+                        <div class="fw-semibold">{{ student.name }} ({{ student.roll_no }})</div>
+                        <div class="small text-muted">{{ student.email }}</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('admin_student_profile', roll_no=student.roll_no) }}" class="btn btn-sm btn-outline-primary">View Profile</a>
+                        <a href="{{ url_for('admin_student_action', roll_no=student.roll_no, action='blacklist') }}" class="btn btn-sm btn-outline-danger">Blacklist</a>
+                    </div>
                 </li>
                 {% else %}
                 <li class="list-group-item text-muted">No registered students found.</li>
@@ -191,13 +196,12 @@
             <ul class="list-group list-group-flush">
                 {% for company in pending_companies %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <details class="w-100">
-                        <summary class="fw-semibold">{{ company.company_name }} ({{ company.email }})</summary>
-                        <div class="small text-muted mt-1">
-                            {{ company.website }} | HR: {{ company.hr_name }} ({{ company.hr_email }})
-                        </div>
-                    </details>
+                    <div>
+                        <div class="fw-semibold">{{ company.company_name }} ({{ company.email }})</div>
+                        <div class="small text-muted">HR: {{ company.hr_name }} ({{ company.hr_email }})</div>
+                    </div>
                     <div class="btn-group" role="group">
+                        <a href="{{ url_for('admin_company_profile', company_id=company.company_id) }}" class="btn btn-sm btn-outline-primary">View Profile</a>
                         <a href="{{ url_for('admin_company_action', company_id=company.company_id, action='approve') }}" class="btn btn-sm btn-outline-success">Approve</a>
                         <a href="{{ url_for('admin_company_action', company_id=company.company_id, action='reject') }}" class="btn btn-sm btn-outline-danger">Reject</a>
                     </div>
@@ -214,14 +218,11 @@
                 {% for student in pending_students %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
-                        <details class="w-100">
-                            <summary class="fw-semibold">{{ student.name }} ({{ student.roll_no }})</summary>
-                            <div class="small text-muted mt-1">
-                                {{ student.email }} | {{ student.phone_no }} | Dept: {{ student.dept_id }} | CGPA: {{ student.cgpa }}
-                            </div>
-                        </details>
+                        <div class="fw-semibold">{{ student.name }} ({{ student.roll_no }})</div>
+                        <div class="small text-muted">{{ student.email }}</div>
                     </div>
                     <div>
+                        <a href="{{ url_for('admin_student_profile', roll_no=student.roll_no) }}" class="btn btn-sm btn-outline-primary">View Profile</a>
                         <a href="{{ url_for('admin_student_action', roll_no=student.roll_no, action='approve') }}" class="btn btn-sm btn-outline-success">Approve</a>
                         <a href="{{ url_for('admin_student_action', roll_no=student.roll_no, action='reject') }}" class="btn btn-sm btn-outline-danger">Reject</a>
                     </div>
@@ -246,15 +247,9 @@
                     {% for drive in drives if drive.status == 'approved' %}
                     <tr>
                         <td>{{ loop.index }}</td>
-                        <td>
-                            <details>
-                                <summary class="fw-semibold">{{ drive.name }}</summary>
-                                <div class="small text-muted mt-1">
-                                    {{ drive.job_title }} | {{ drive.location or 'N/A' }} | Deadline: {{ drive.deadline.strftime('%d/%m/%Y') if drive.deadline else 'N/A' }}
-                                </div>
-                            </details>
-                        </td>
+                        <td>{{ drive.name }}</td>
                         <td class="text-end">
+                            <a href="{{ url_for('admin_drive_details', drive_id=drive.id) }}" class="btn btn-sm btn-outline-primary">View Drive Details</a>
                             <a href="{{ url_for('admin_drive_action', drive_id=drive.id, action='reject') }}" class="btn btn-sm btn-outline-danger">Reject</a>
                         </td>
                     </tr>
@@ -279,16 +274,10 @@
                     {% for drive in pending_drives %}
                     <tr>
                         <td>{{ loop.index }}</td>
-                        <td>
-                            <details>
-                                <summary class="fw-semibold">{{ drive.name }}</summary>
-                                <div class="small text-muted mt-1">
-                                    {{ drive.job_title }} | {{ drive.location or 'N/A' }} | Deadline: {{ drive.deadline.strftime('%d/%m/%Y') if drive.deadline else 'N/A' }}
-                                </div>
-                            </details>
-                        </td>
+                        <td>{{ drive.name }}</td>
                         <td class="text-end">
                             <div class="btn-group" role="group">
+                                <a href="{{ url_for('admin_drive_details', drive_id=drive.id) }}" class="btn btn-sm btn-outline-primary">View Drive Details</a>
                                 <a href="{{ url_for('admin_drive_action', drive_id=drive.id, action='approve') }}" class="btn btn-sm btn-outline-success">Approve</a>
                                 <a href="{{ url_for('admin_drive_action', drive_id=drive.id, action='reject') }}" class="btn btn-sm btn-outline-danger">Reject</a>
                             </div>

@@ -43,16 +43,10 @@
 
                     <h5 class="fw-bold mb-3 border-bottom border-dark pb-2">Academic Profile</h5>
                     <div class="row mb-4">
-                        <div class="col-md-6 mb-2"><strong class="text-secondary">Department:</strong> {{ dept.dept }}</div>
-                        <div class="col-md-6 mb-2"><strong class="text-secondary">Graduation Year:</strong> {{ student.grad_yr }}</div>
+                        <div class="col-md-6 mb-2"><strong class="text-secondary">Department:</strong> {{ dept.dept_name if dept else student.dept_id }}</div>
+                        <div class="col-md-6 mb-2"><strong class="text-secondary">Graduation Year:</strong> {{ student.graduation_year }}</div>
                         <div class="col-md-6 mb-2"><strong class="text-secondary">CGPA:</strong> {{ student.cgpa }}</div>
-                        <div class="col-md-6 mb-2"><strong class="text-secondary">Active Backlogs:</strong> 
-                            {% if student.backlogs and student.backlogs > 0 %}
-                                <span>{{ student.backlogs }}</span>
-                            {% else %}
-                                <span>0</span>
-                            {% endif %}
-                        </div>
+                        <div class="col-md-6 mb-2"><strong class="text-secondary">Has Backlogs:</strong> {{ 'Yes' if student.has_backlogs else 'No' }}</div>
                     </div>
 
                     <h5 class="fw-bold mb-3 border-bottom border-dark pb-2">Skills :</h5>

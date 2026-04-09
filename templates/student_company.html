@@ -53,6 +53,7 @@
                                 <th class="fw-normal pb-2 pt-2">Job Title</th>
                                 <th class="fw-normal pb-2 pt-2">Location</th>
                                 <th class="fw-normal pb-2 pt-2">Deadline</th>
+                                <th class="fw-normal pb-2 pt-2">Last Updated</th>
                                 <th class="fw-normal pb-2 pt-2 text-end pe-4">Action</th>
                             </tr>
                         </thead>
@@ -62,13 +63,14 @@
                                 <td class="pt-3 ps-3 fw-bold text-dark">{{ drive.job_title }}</td>
                                 <td class="pt-3">{{ drive.location or 'Not Specified' }}</td> 
                                 <td class="pt-3">{{ drive.deadline.strftime('%d/%m/%Y') if drive.deadline else 'N/A' }}</td>
+                                <td class="pt-3">{{ drive.updated_at.strftime('%d/%m/%Y %I:%M %p') if drive.updated_at else 'N/A' }}</td>
                                 <td class="text-end pt-2 pb-2 pe-3">
                                     <a href="{{ url_for('student_drive_details', drive_id=drive.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-4">View & Apply</a>
                                 </td>
                             </tr>
                             {% else %}
                             <tr>
-                                <td colspan="4" class="text-center text-muted pt-4 pb-4">
+                                <td colspan="5" class="text-center text-muted pt-4 pb-4">
                                     This company currently has no active job postings.
                                 </td>
                             </tr>

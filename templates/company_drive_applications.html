@@ -45,6 +45,18 @@
                             <td>{{ drive.eligible_grad_yr if drive.eligible_grad_yr else 'N/A' }}</td>
                         </tr>
                         <tr>
+                            <th class="bg-light">Eligible Departments</th>
+                            <td>
+                                {% if drive.eligible_departments %}
+                                    {% for item in drive.eligible_departments %}
+                                        {{ item.department.dept_name }}{% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
                             <th class="bg-light">Application Deadline</th>
                             <td>{{ drive.deadline.strftime('%d/%m/%Y') if drive.deadline else 'N/A' }}</td>
                         </tr>

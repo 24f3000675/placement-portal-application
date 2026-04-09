@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-4 pb-2 border-bottom">
+            <h3 class="mb-0">Company Profile</h3>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary btn-sm">Back to Dashboard</a>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header fw-semibold">Company Details</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6"><strong>Company Name:</strong> {{ company.company_name }}</div>
+                    <div class="col-md-6"><strong>Email:</strong> {{ company.email }}</div>
+                    <div class="col-md-6"><strong>HR Name:</strong> {{ company.hr_name }}</div>
+                    <div class="col-md-6"><strong>HR Email:</strong> {{ company.hr_email }}</div>
+                    <div class="col-md-6"><strong>HR Phone:</strong> {{ company.hr_phone }}</div>
+                    <div class="col-md-6"><strong>Website:</strong> <a href="{{ company.website }}" target="_blank" rel="noopener noreferrer">{{ company.website }}</a></div>
+                    <div class="col-md-6"><strong>Approval Status:</strong> {{ company.approval_status }}</div>
+                    <div class="col-md-6"><strong>Blacklisted:</strong> {{ 'Yes' if company.is_blacklisted else 'No' }}</div>
+                    <div class="col-md-12"><strong>Description:</strong><div class="mt-1">{{ company.company_desc }}</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-5">
+            <div class="card-header fw-semibold">Placement Drives</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Sr No.</th>
+                            <th>Drive Name</th>
+                            <th>Job Title</th>
+                            <th>Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for drive in drives %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ drive.name }}</td>
+                            <td>{{ drive.job_title }}</td>
+                            <td>{{ drive.status }}</td>
+                            <td class="text-end">
+                                <a href="{{ url_for('admin_drive_details', drive_id=drive.id) }}" class="btn btn-sm btn-outline-primary">View Drive Details</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No drives posted by this company.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-4 pb-2 border-bottom">
+            <h3 class="mb-0">Drive Details</h3>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary btn-sm">Back to Dashboard</a>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header fw-semibold">Drive Information</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6"><strong>Drive Name:</strong> {{ drive.name }}</div>
+                    <div class="col-md-6"><strong>Company:</strong> <a href="{{ url_for('admin_company_profile', company_id=drive.company.company_id) }}">{{ drive.company.company_name }}</a></div>
+                    <div class="col-md-6"><strong>Job Title:</strong> {{ drive.job_title }}</div>
+                    <div class="col-md-6"><strong>Location:</strong> {{ drive.location or 'N/A' }}</div>
+                    <div class="col-md-6"><strong>Salary:</strong> {{ drive.salary if drive.salary else 'N/A' }}</div>
+                    <div class="col-md-6"><strong>Minimum CGPA:</strong> {{ drive.min_cgpa if drive.min_cgpa else 'N/A' }}</div>
+                    <div class="col-md-6"><strong>Eligible Graduation Year:</strong> {{ drive.eligible_grad_yr if drive.eligible_grad_yr else 'N/A' }}</div>
+                    <div class="col-md-6"><strong>Deadline:</strong> {{ drive.deadline.strftime('%d/%m/%Y') if drive.deadline else 'N/A' }}</div>
+                    <div class="col-md-6"><strong>Status:</strong> {{ drive.status }}</div>
+                    <div class="col-md-6"><strong>Total Applications:</strong> {{ applications_count }}</div>
+                    <div class="col-md-12"><strong>Job Description:</strong><div class="mt-1">{{ drive.job_desc }}</div></div>
+                    <div class="col-md-12"><strong>Remarks:</strong><div class="mt-1">{{ drive.remarks or 'N/A' }}</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-5">
+            <div class="card-header fw-semibold">Eligible Departments</div>
+            <div class="card-body">
+                {% if drive.eligible_departments %}
+                <ul class="mb-0">
+                    {% for item in drive.eligible_departments %}
+                    <li>{{ item.department.dept_name }} ({{ item.dept_id }})</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted mb-0">No department restrictions listed.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

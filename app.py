@@ -242,6 +242,48 @@ def admin_dashboard():
         drive_search=drive_search)
 
 
+@app.route('/admin/student/<string:roll_no>/profile')
+@login_required
+def admin_student_profile(roll_no):
+    if not current_user.is_authenticated or not current_user.get_id().startswith('admin_'):
+        return "Unauthorized Access : Not an Admin ", 403
+
+    student = Student.query.filter_by(roll_no=roll_no).first_or_404()
+    department = Department.query.filter_by(dept_id=student.dept_id).first()
+    profile = Skills.query.filter_by(student_roll=student.roll_no).first()
+
+    return render_template(
+        'admin_student_profile.html',
+        student=student,
+        department=department,
+        profile=profile
+    )
+
+
+@app.route('/admin/company/<int:company_id>/profile')
+@login_required
+def admin_company_profile(company_id):
+    if not current_user.is_authenticated or not current_user.get_id().startswith('admin_'):
+        return "Unauthorized Access : Not an Admin ", 403
+
+    company = Company.query.filter_by(company_id=company_id).first_or_404()
+    drives = PlacementDrive.query.filter_by(comp_id=company.company_id).order_by(PlacementDrive.created_at.desc()).all()
+
+    return render_template('admin_company_profile.html', company=company, drives=drives)
+
+
+@app.route('/admin/drive/<int:drive_id>/details')
+@login_required
+def admin_drive_details(drive_id):
+    if not current_user.is_authenticated or not current_user.get_id().startswith('admin_'):
+        return "Unauthorized Access : Not an Admin ", 403
+
+    drive = PlacementDrive.query.filter_by(id=drive_id).first_or_404()
+    applications_count = Application.query.filter_by(drive_id=drive.id).count()
+
+    return render_template('admin_drive_details.html', drive=drive, applications_count=applications_count)
+
+
 @app.route('/admin/company/action/<int:company_id>/<action>') #Approve/Reject/Blacklist the company
 @login_required
 def admin_company_action(company_id, action):
@@ -387,6 +429,13 @@ def student_dashboard():
         PlacementDrive.status.in_(['approved', 'Approved', 'Active'])
     )
 
+    query = query.join(
+        EligibleDepartments,
+        EligibleDepartments.drive_id == PlacementDrive.id
+    ).filter(
+        EligibleDepartments.dept_id == current_user.dept_id
+    )
+
     if search_query:
         search_term = f"%{search_query}%"
         query = query.filter(
@@ -454,9 +503,13 @@ def student_company(company_id):
         flash('Requested Company does not exist', 'warning')
         return redirect(url_for('student_dashboard'))
 
-    active_drives = PlacementDrive.query.filter(
+    active_drives = PlacementDrive.query.join(
+        EligibleDepartments,
+        EligibleDepartments.drive_id == PlacementDrive.id
+    ).filter(
         PlacementDrive.comp_id == company_id,
-        PlacementDrive.status.in_(['approved', 'Approved', 'Active'])
+        PlacementDrive.status.in_(['approved', 'Approved', 'Active']),
+        EligibleDepartments.dept_id == current_user.dept_id
     ).order_by(PlacementDrive.deadline.asc()).all()
 
     return render_template('student_company.html', company=company, active_drives=active_drives)
@@ -478,16 +531,36 @@ def student_drive_details(drive_id):
         flash('Drive not found', 'warning')
         return redirect(url_for('student_dashboard'))
 
+    is_dept_eligible = EligibleDepartments.query.filter_by(
+        drive_id=drive.id,
+        dept_id=current_user.dept_id
+    ).first() is not None
+
+    if not is_dept_eligible:
+        flash('You are not eligible to view this drive based on your department.', 'warning')
+        return redirect(url_for('student_dashboard'))
+
     existing_application = Application.query.filter_by(student_roll=current_user.roll_no, drive_id=drive_id).first()
     is_drive_open = drive.status in ['approved', 'Approved', 'Active']
     if drive.deadline:
         is_drive_open = is_drive_open and drive.deadline >= datetime.now()
+
+    student_profile = Skills.query.filter_by(student_roll=current_user.roll_no).first()
+    profile_complete = (
+        student_profile and 
+        student_profile.resume_link and 
+        student_profile.resume_link.strip() and 
+        student_profile.skills and 
+        student_profile.skills.strip()
+    )
 
     if request.method == 'POST': #Job Application
         if existing_application:
             flash('You have already applied for this drive', 'warning')
         elif not is_drive_open:
             flash('This drive is no longer accepting applications.', 'danger')
+        elif not profile_complete:
+            flash('Your profile is incomplete. Please add your resume link and skills to apply.', 'warning')
         else:
             if drive.status != 'approved':
                 flash('The placement drive is not approved by admin, you cannot apply yet', 'warning')
@@ -498,7 +571,7 @@ def student_drive_details(drive_id):
             flash(f'Application submitted successfully for {drive.name}!', 'success')
         return redirect(url_for('student_dashboard'))
     
-    return render_template('student_drive_details.html', drive=drive, existing_application=existing_application, is_drive_open=is_drive_open)
+    return render_template('student_drive_details.html', drive=drive, existing_application=existing_application, is_drive_open=is_drive_open, profile_complete=profile_complete)
 
 
 @app.route('/admin/applications') #Fetch and manage student job applications
@@ -568,7 +641,16 @@ def company_dashboard():
         PlacementDrive.status.in_(['Closed', 'Rejected'])
     ).all()
 
-    return render_template('company_dashboard.html', company=company, upcoming_drives=upcoming_drives, closed_drives=closed_drives, applications=applications)
+    stats = {
+        'total_jobs': len(drives),
+        'total_applications': len(applications),
+        'applied': len([app for app in applications if app.application_status == 'applied']),
+        'shortlisted': len([app for app in applications if app.application_status == 'shortlisted']),
+        'selected': len([app for app in applications if app.application_status == 'selected']),
+        'rejected': len([app for app in applications if app.application_status == 'rejected']),
+    }
+
+    return render_template('company_dashboard.html', company=company, upcoming_drives=upcoming_drives, closed_drives=closed_drives, applications=applications, stats=stats)
 
 @app.route('/company/drive/create', methods=['GET', 'POST']) #Create a new drive
 @login_required
@@ -631,6 +713,9 @@ def company_drive_update(drive_id):
     if not drive:
         flash('Drive not found', 'danger')
         return redirect(url_for('company_dashboard'))
+
+    if drive.comp_id != current_user.company_id:
+        return "Unauthorized Access : Invalid Drive Owner ", 403
     
     drive.name = request.form.get('name', drive.name)
     drive.job_title = request.form.get('job_title', drive.job_title)
@@ -642,10 +727,41 @@ def company_drive_update(drive_id):
     
     if request.form.get('deadline'):
         drive.deadline = datetime.strptime(request.form.get('deadline'), '%Y-%m-%d')
+
+    submitted_department_ids = request.form.getlist('departments')
+    if submitted_department_ids is not None:
+        EligibleDepartments.query.filter_by(drive_id=drive.id).delete()
+        for dept_id in submitted_department_ids:
+            if dept_id and dept_id.strip():
+                db.session.add(EligibleDepartments(drive_id=drive.id, dept_id=dept_id))
+
+    drive.updated_at = datetime.now()
     
     db.session.commit()
     flash(f'{drive.name} updated successfully!', 'success')
     return redirect(url_for('company_dashboard'))
+
+
+@app.route('/company/drive/edit/<int:drive_id>', methods=['GET'])
+@login_required
+def company_edit_drive(drive_id):
+    if not current_user.is_authenticated or not current_user.get_id().startswith('company_'):
+        return "Unauthorized Access : Not a Company ", 403
+
+    drive = PlacementDrive.query.filter_by(id=drive_id).first_or_404()
+
+    if drive.comp_id != current_user.company_id:
+        return "Unauthorized Access : Invalid Drive Owner ", 403
+
+    departments = Department.query.all()
+    selected_department_ids = [item.dept_id for item in drive.eligible_departments]
+
+    return render_template(
+        'company_edit_drive.html',
+        drive=drive,
+        departments=departments,
+        selected_department_ids=selected_department_ids
+    )
 
 @app.route('/company/drive/<string:action>/<int:drive_id>') #Take action on a drive
 @login_required
@@ -654,6 +770,13 @@ def company_drive_action(action, drive_id):
         return "Unauthorized Access : Not a Company ", 403
     
     drive = PlacementDrive.query.filter_by(id=drive_id).first()
+
+    if not drive:
+        flash('Drive not found', 'danger')
+        return redirect(url_for('company_dashboard'))
+
+    if drive.comp_id != current_user.company_id:
+        return "Unauthorized Access : Invalid Drive Owner ", 403
 
     if action == 'close':
         drive.status = 'Closed'
@@ -673,15 +796,23 @@ def company_application_action(app_id, action):
     
     application = Application.query.filter_by(id=app_id).first()
 
+    if not application:
+        flash('Application not found', 'danger')
+        return redirect(url_for('company_dashboard'))
+
+    drive = PlacementDrive.query.filter_by(id=application.drive_id).first()
+    if not drive or drive.comp_id != current_user.company_id:
+        return "Unauthorized Access : Invalid Application Owner ", 403
+
     student = Student.query.filter_by(roll_no=application.student_roll).first()
+
+    if not student:
+        flash('Student not found for this application', 'danger')
+        return redirect(url_for('company_drive_action', action='fetch_applications', drive_id=application.drive_id))
 
     student_skills = Skills.query.filter_by(student_roll=student.roll_no).first()
 
     dept = Department.query.filter_by(dept_id=student.dept_id).first()
-
-    if not application:
-        flash('Application not found', 'danger')
-        return redirect(url_for('company_dashboard'))
 
     if request.method == 'POST':
         if action == 'review':

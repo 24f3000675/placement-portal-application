@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-4 pb-2 border-bottom">
+            <h3 class="mb-0">Student Profile</h3>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary btn-sm">Back to Dashboard</a>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header fw-semibold">Basic Details</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6"><strong>Name:</strong> {{ student.name }}</div>
+                    <div class="col-md-6"><strong>Roll No:</strong> {{ student.roll_no }}</div>
+                    <div class="col-md-6"><strong>Email:</strong> {{ student.email }}</div>
+                    <div class="col-md-6"><strong>Phone:</strong> {{ student.phone_no }}</div>
+                    <div class="col-md-6"><strong>Gender:</strong> {{ student.gender }}</div>
+                    <div class="col-md-6"><strong>Date of Birth:</strong> {{ student.dob.strftime('%d/%m/%Y') if student.dob else 'N/A' }}</div>
+                    <div class="col-md-6"><strong>Department:</strong> {{ department.dept_name if department else student.dept_id }}</div>
+                    <div class="col-md-6"><strong>Graduation Year:</strong> {{ student.graduation_year }}</div>
+                    <div class="col-md-6"><strong>CGPA:</strong> {{ student.cgpa }}</div>
+                    <div class="col-md-6"><strong>Backlogs:</strong> {{ 'Yes' if student.has_backlogs else 'No' }}</div>
+                    <div class="col-md-6"><strong>Location:</strong> {{ student.location or 'N/A' }}</div>
+                    <div class="col-md-6"><strong>Approval Status:</strong> {{ student.approval_status }}</div>
+                    <div class="col-md-6"><strong>Blacklisted:</strong> {{ 'Yes' if student.is_blacklisted else 'No' }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-5">
+            <div class="card-header fw-semibold">Profile Details</div>
+            <div class="card-body">
+                {% if profile %}
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <strong>Resume Link:</strong>
+                        {% if profile.resume_link %}
+                        <a href="{{ profile.resume_link }}" target="_blank" rel="noopener noreferrer">{{ profile.resume_link }}</a>
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </div>
+                    <div class="col-md-12">
+                        <strong>Github URL:</strong>
+                        {% if profile.github_url %}
+                        <a href="{{ profile.github_url }}" target="_blank" rel="noopener noreferrer">{{ profile.github_url }}</a>
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </div>
+                    <div class="col-md-12">
+                        <strong>LinkedIn URL:</strong>
+                        {% if profile.linkedin_url %}
+                        <a href="{{ profile.linkedin_url }}" target="_blank" rel="noopener noreferrer">{{ profile.linkedin_url }}</a>
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </div>
+                    <div class="col-md-12">
+                        <strong>Skills:</strong>
+                        <div class="mt-1">{{ profile.skills or 'N/A' }}</div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No profile details available for this student yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

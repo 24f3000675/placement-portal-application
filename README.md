@@ -26,6 +26,6 @@ This project was built using a standard MVC architecture with server-side render
 
 * **Backend:** Flask (Python)
 * **Database:** SQLite with Flask-SQLAlchemy
-* **Authentication:** Flask-Login and Werkzeug for password hashing
+* **Authentication:** Flask-Login and Werkzeug
 * **Frontend:** HTML5, CSS3, Bootstrap 5, and Jinja2 templates
 
